@@ -1,19 +1,44 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { PersistGate } from 'redux-persist/integration/react';
+import { Provider } from 'react-redux';
+import * as Font from 'expo-font';
+import { View } from 'react-native';
+import AppContainer from './screens/AppContainer';
+import { SafeAreaProvider } from 'react-native-safe-area-view';
+import { store, persistor } from './store';
+import { ThemeProvider } from 'react-native-elements';
+import elementsTheme from './elementsTheme';
 
-export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-    </View>
-  );
+console.disableYellowBox = true;
+
+export default class App extends React.Component {
+  state = {
+    fontLoaded: false,
+  };
+
+  async componentDidMount() {
+    if (!this.state.fontLoaded) {
+      await Font.loadAsync({
+        rubik: require('./assets/fonts/rubik.ttf'),
+      });
+      this.setState({ fontLoaded: true });
+    }
+  }
+
+  render() {
+    if (this.state.fontLoaded) {
+      return (
+        <SafeAreaProvider>
+          <Provider store={store}>
+            <PersistGate persistor={persistor}>
+              <ThemeProvider theme={elementsTheme}>
+                <AppContainer />
+              </ThemeProvider>
+            </PersistGate>
+          </Provider>
+        </SafeAreaProvider>
+      );
+    }
+    return <View />;
+  }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
