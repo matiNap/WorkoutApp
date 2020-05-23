@@ -3,11 +3,10 @@ import { StyleSheet, View, BackHandler } from 'react-native';
 import { Text } from 'react-native-elements';
 import Roll from './Roll';
 import metrics from '_metrics';
+import ExitButtons from '_components/ExitButtons';
 import palette from '_palette';
-import typography from '_typography';
-import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 
-const RANGE = [
+const RANGE: any[] = [
   '00',
   '01',
   '02',
@@ -94,6 +93,7 @@ const TimeSelector = ({
     }
   });
 
+  if (!opened) return null;
   return (
     <View style={[StyleSheet.absoluteFill, styles.background]}>
       <View style={styles.container}>
@@ -102,23 +102,12 @@ const TimeSelector = ({
           <Roll range={RANGE} setIndex={setMinutes} label="Minutes" />
           <Roll range={RANGE} setIndex={setSeconds} label="Seconds" />
         </View>
-        <View style={styles.buttons}>
-          <TouchableWithoutFeedback
-            onPress={() => {
-              onConfirm(minutes, seconds);
-              setOpened(false);
-            }}
-          >
-            <Text style={styles.textButton}>Cancel</Text>
-          </TouchableWithoutFeedback>
-          <TouchableWithoutFeedback
-            onPress={() => {
-              setOpened(false);
-            }}
-          >
-            <Text style={styles.textButton}>OK</Text>
-          </TouchableWithoutFeedback>
-        </View>
+        <ExitButtons
+          {...{ setOpened }}
+          onConfirm={() => {
+            onConfirm(minutes, seconds);
+          }}
+        />
       </View>
     </View>
   );
@@ -139,7 +128,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: metrics.height / 2 - HEIGHT / 2,
     left: metrics.width / 2 - WIDTH / 2,
-    // height: HEIGHT,
     zIndex: 160,
     alignSelf: 'center',
     backgroundColor: palette.secondary,
@@ -164,16 +152,5 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontSize: 22,
     marginLeft: 15,
-  },
-  buttons: {
-    flexDirection: 'row',
-    width: '100%',
-    justifyContent: 'space-around',
-  },
-  textButton: {
-    fontWeight: 'bold',
-    fontSize: typography.fontSize.big,
-    marginTop: 20,
-    marginBottom: 15,
   },
 });

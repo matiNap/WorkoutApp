@@ -7,7 +7,7 @@
       "_actions/*": ["./actions/*"],
       "_apis/*": ["./apis/*"],
       "_assets/*": ["./assets/*"],
-      "_helpers/*": ["./helpers/*"],
+      "_helpers": ["./helpers/index"],
       "_components/*": ["./screens/components/*"],
       "_typography": ["./theme/typography"],
       "_palette": ["./theme/palette"],
@@ -15,7 +15,7 @@
       "_globals": ["./theme/globals"],
       "_zIndex": ["./theme/zIndex"],
       "_types": ["./types/index"],
-      "_stylesheet": ["./types/stylesheet"],
+      "_stylesheet": ["./theme/stylesheet"],
       "_rootReducer": ["./reducers/index"]
     },
     "jsx": "react-native",

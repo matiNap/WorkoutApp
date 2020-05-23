@@ -14,13 +14,13 @@ import typography from '_typography';
 interface Props {
   left: string;
   right: string;
-  setValue: (value: string) => void;
+  onChange: (newValue: string) => void;
   initValue: string;
 }
 
 const { cond, eq, call } = Animated;
 
-const Switch = ({ left, right, setValue, initValue }: Props) => {
+const Switch = ({ left, right, onChange, initValue }: Props) => {
   const [swtich, setSwitch] = useState(initValue === left);
   const transitionValue = useTransition(swtich, {
     duration: 150,
@@ -31,16 +31,16 @@ const Switch = ({ left, right, setValue, initValue }: Props) => {
     outputRange: [0, 65],
   });
   useCode(
-    [
+    () => [
       cond(
         eq(transitionValue, 1),
         [
           call([], () => {
-            setValue(right);
+            onChange(right);
           }),
         ],
         call([], () => {
-          setValue(left);
+          onChange(left);
         }),
       ),
     ],

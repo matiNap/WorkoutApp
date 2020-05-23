@@ -5,6 +5,7 @@ export default {
   text: {
     primary: '#e8e8e8',
     secondary: '#2e2e2e',
+    gray: '#696969',
   },
   actions: {
     succes: '#00cc36',

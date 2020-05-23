@@ -5,7 +5,7 @@ import palette from '_palette';
 import typography from '_typography';
 import metrics from '_metrics';
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
-import Workouts from '_components/Workouts';
+import Workouts from '_components/WorkoutsList';
 
 const Selector = () => {
   const [opened, setOpened] = useState(false);

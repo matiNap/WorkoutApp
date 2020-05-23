@@ -1,19 +1,28 @@
 import React from 'react';
 import { View, StyleSheet, StatusBar } from 'react-native';
 import palette from '_palette';
-import Workouts from '_components/Workouts';
+import WorkoutsList from '_components/WorkoutsList';
 import { MaterialIcons } from '@expo/vector-icons';
 import metrics from '_metrics';
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
+import { createWorkout } from '_actions/creators/workout';
+import { connect, createSelectorHook } from 'react-redux';
 
-const Excercises = ({ navigation }: { navigation: any }) => {
+interface Props {
+  createWorkout: typeof createWorkout;
+  navigation: any;
+}
+
+const Workouts = (props: Props) => {
+  const { navigation } = props;
   return (
     <View style={styles.container}>
-      <Workouts />
+      <WorkoutsList />
       <View style={styles.addContainer}>
         <TouchableWithoutFeedback
           onPress={() => {
             navigation.navigate('Creator');
+            props.createWorkout();
           }}
         >
           <MaterialIcons name="add" style={styles.addIcon} />
@@ -49,4 +58,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Excercises;
+export default connect(null, { createWorkout })(Workouts);

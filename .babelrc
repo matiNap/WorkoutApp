@@ -8,7 +8,7 @@
           "_types": "./types/index.ts",
           "_apis": "./apis/",
           "_actions": "./actions/",
-          "_helpers": "./helpers/",
+          "_helpers": "./helpers/index",
           "_assets": "./assets/",
           "_components": "./screens/components/",
           "_typography": "./theme/typography",

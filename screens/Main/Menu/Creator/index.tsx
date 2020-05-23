@@ -4,47 +4,35 @@ import palette from '_palette';
 import {
   TouchableWithoutFeedback,
   TextInput,
-  ScrollView,
 } from 'react-native-gesture-handler';
-import { AntDesign, MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
 
-import ExcItem from './components/ExcItem';
 import AddButton from './components/AddButton';
 import Header from '_components/Header';
 import { useNavigation } from '@react-navigation/native';
 import Settings from './Settings';
 import typography from '_typography';
 import Back from '_components/Back';
-import DraggableList from '_components/DraggableList';
+// import DraggableList from './components/DraggableList';
+import Overlay from '_components/Overlay';
+import Edit from './components/Edit';
+import DraggableList from './components/DraggableList';
+import { useSelector, createSelectorHook } from 'react-redux';
+import { RootState } from '_rootReducer';
 
 interface Props {
   navigation: any;
 }
 
-const DATA = [
-  {
-    id: '1',
-    title: 'Push up',
-    value: '20',
-    type: 'reps',
-  },
-  {
-    id: '2',
-    title: 'Push up',
-    value: '20',
-    type: 'reps',
-  },
-  {
-    id: '3',
-    title: 'Push up',
-    value: '20',
-    type: 'reps',
-  },
-];
-
 const List = ({}: Props) => {
+  const workoutId = 0;
+  const exercises = useSelector((state: RootState) => {
+    return state.workouts[workoutId] ? state.workouts[workoutId] : [];
+  });
   const [name, setName] = useState('Workout name');
   const [settingsOpened, setSettingsOpened] = useState(false);
+  const [addOpened, setAddOpened] = useState(false);
+  const [editOpened, setEditOpened] = useState(false);
   const navigation = useNavigation();
   BackHandler.addEventListener('hardwareBackPress', () => {
     console.log(settingsOpened);
@@ -91,20 +79,18 @@ const List = ({}: Props) => {
           </TouchableWithoutFeedback>
         </View>
       </Header>
-
-      <DraggableList
-        data={DATA}
-        renderItem={({ data, translateY, index }) => (
-          <ExcItem
-            {...{ translateY, index }}
-            value={data.value}
-            title={data.title}
-            type={data.type}
-            listLength={DATA.length}
-          />
-        )}
+      <Edit
+        opened={addOpened}
+        setOpened={setAddOpened}
+        title="Add excercise: "
       />
-      <AddButton />
+      <DraggableList data={[]} />
+      <AddButton
+        onPress={() => {
+          setAddOpened(true);
+        }}
+      />
+
       <Settings
         opened={settingsOpened}
         setOpened={setSettingsOpened}

@@ -12,7 +12,6 @@ import {
   useValue,
   snapPoint,
   timing,
-  string,
 } from 'react-native-redash';
 import metrics from '_metrics';
 import { LinearGradient } from 'expo-linear-gradient';

@@ -8,7 +8,7 @@ module.exports = {
       alias: {
         '_apis/*': './apis/*',
         '_actions/*': './actions/*',
-        '_helpers/*': './helpers/*',
+        _helpers: './helpers/index',
         '_assets/*': './assets/*',
         '_components/*': './screens/components/*',
         _types: './types/index',

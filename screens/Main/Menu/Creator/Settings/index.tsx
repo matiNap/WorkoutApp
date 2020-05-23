@@ -76,7 +76,9 @@ const Settings = ({ opened, setOpened }: Props) => {
             <Switch
               left={SERIES_TYPE}
               right={ROWS_TYPE}
-              setValue={setType}
+              onChange={(newValue) => {
+                setType(newValue);
+              }}
               initValue={ROWS_TYPE}
             />
           </View>

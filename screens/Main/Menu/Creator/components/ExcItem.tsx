@@ -1,46 +1,34 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { excerciseType } from '_types';
+import { exerciseType } from '_types';
 import { Text } from 'react-native-elements';
 import { MaterialIcons } from '@expo/vector-icons';
 import palette from '_palette';
 import metrics from '_metrics';
-import Animated, {
-  useCode,
-  Easing,
-  abs,
-} from 'react-native-reanimated';
+import Animated, { useCode, Easing } from 'react-native-reanimated';
 import {
   PanGestureHandler,
   State,
 } from 'react-native-gesture-handler';
 import {
   onGestureEvent,
-  usePanGestureHandler,
   timing,
+  approximates,
 } from 'react-native-redash';
 
-const {
-  cond,
-  set,
-  add,
-  eq,
-  floor,
-  multiply,
-  divide,
-  debug,
-} = Animated;
+const { cond, set, add, eq, floor, multiply, divide } = Animated;
 
 interface Props {
   title: string;
   value: string | number;
   listLength: number;
-  type: excerciseType;
+  type: exerciseType;
   translateY: Animated.Node<number>;
   index: number;
+  values: Animated.Node<number>[];
 }
 
-const ITEM_HEIGHT = 50;
+const ITEM_HEIGHT = 55;
 
 const ExcItem = ({
   title,
@@ -49,44 +37,57 @@ const ExcItem = ({
   translateY,
   listLength,
   index,
+  values,
 }: Props) => {
   const absoluteY = new Animated.Value(0);
   const currentIndex = new Animated.Value(index);
   const state = new Animated.Value(State.UNDETERMINED);
   const translationY = new Animated.Value(0);
+  const to = new Animated.Value(0);
   const gestureHandler = onGestureEvent({
     absoluteY,
     state,
     translationY,
   });
   useCode(
-    [
+    () => [
       cond(
         eq(state, State.ACTIVE),
-        [set(translateY, translationY)],
+        [
+          set(
+            translateY,
+            add(multiply(currentIndex, ITEM_HEIGHT), translationY),
+          ),
+        ],
         cond(eq(state, State.END), [
+          set(
+            to,
+            add(
+              multiply(currentIndex, ITEM_HEIGHT),
+
+              multiply(
+                ITEM_HEIGHT,
+                floor(divide(translationY, ITEM_HEIGHT)),
+              ),
+            ),
+          ),
           set(
             translateY,
             timing({
-              to: add(
-                multiply(currentIndex, ITEM_HEIGHT),
-
-                multiply(
-                  ITEM_HEIGHT,
-                  floor(divide(translationY, ITEM_HEIGHT)),
-                ),
-              ),
+              to,
               from: translateY,
               easing: Easing.inOut(Easing.ease),
             }),
           ),
-          set(
-            currentIndex,
-            add(
+          cond(approximates(translateY, to), [
+            set(
               currentIndex,
-              floor(divide(translationY, ITEM_HEIGHT)),
+              add(
+                currentIndex,
+                floor(divide(translationY, ITEM_HEIGHT)),
+              ),
             ),
-          ),
+          ]),
         ]),
       ),
     ],
@@ -123,7 +124,7 @@ const styles = StyleSheet.create({
     height: ITEM_HEIGHT,
     width: metrics.width * 0.95,
     alignSelf: 'center',
-
+    paddingVertical: 5,
     backgroundColor: palette.secondary,
   },
   left: {

@@ -1,12 +1,16 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 import { MaterialIcons } from '@expo/vector-icons';
 import palette from '_palette';
 
-const AddButton = () => {
+interface Props {
+  onPress: () => void;
+}
+
+const AddButton = ({ onPress }: Props) => {
   return (
-    <TouchableWithoutFeedback>
+    <TouchableWithoutFeedback {...{ onPress }}>
       <MaterialIcons name="add" style={styles.icon} />
     </TouchableWithoutFeedback>
   );
