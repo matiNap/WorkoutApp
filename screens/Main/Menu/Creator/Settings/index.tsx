@@ -12,21 +12,44 @@ import palette from '_palette';
 import Header from '_components/Header';
 import typography from '_typography';
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
-import { AntDesign } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import stylesheet from '_stylesheet';
 import Back from '_components/Back';
 import Switch from '_components/Switch';
+import {
+  saveTypeWorkout,
+  saveExerciseBreak,
+  saveTypeBreak,
+} from '_actions/creators/workout';
+import reactotron from 'reactotron-react-native';
+import { workoutType } from '_types';
+import { connect } from 'react-redux';
+import { fromTimer, timerToString } from '_helpers';
 
 interface Props {
   opened: boolean;
   setOpened: (opened: boolean) => void;
+  saveTypeWorkout: typeof saveTypeWorkout;
+  saveTypeBreak: typeof saveTypeBreak;
+  saveExerciseBreak: typeof saveExerciseBreak;
+  workout_id: number;
+  type: workoutType;
+  typeBreak: number;
+  exerciseBreak: number;
 }
 
 const SERIES_TYPE = 'Series';
-const ROWS_TYPE = 'Rows';
+const ROWS_TYPE = 'Interv';
 
-const Settings = ({ opened, setOpened }: Props) => {
+const Settings = ({
+  opened,
+  setOpened,
+  workout_id,
+  type,
+  typeBreak,
+  exerciseBreak,
+  ...props
+}: Props) => {
   // BackHandler.addEventListener('hardwareBackPress', () => {
   //   if (opened) {
   //     setOpened(false);
@@ -44,12 +67,11 @@ const Settings = ({ opened, setOpened }: Props) => {
     outputRange: [metrics.height, 0],
   });
 
-  const typeBreak = '1:00';
-  const excBreak = '0:15';
-
   const [openedExcTimer, setOpenedExcTimer] = useState(false);
   const [openedTypeTimer, setOpenedTypeTimer] = useState(false);
-  const [type, setType] = useState('Series');
+  const [localType, setType] = useState(
+    type === 'intervals' ? 'Interv' : 'Series',
+  );
   return (
     <Animated.View
       style={[
@@ -77,48 +99,71 @@ const Settings = ({ opened, setOpened }: Props) => {
               left={SERIES_TYPE}
               right={ROWS_TYPE}
               onChange={(newValue) => {
-                setType(newValue);
+                reactotron.log(newValue);
+                if (newValue === 'Interv') {
+                  setType('Intervals');
+                } else {
+                  setType('Series');
+                }
+                props.saveTypeWorkout(
+                  workout_id,
+                  newValue === 'Interv' ? 'intervals' : 'series',
+                );
               }}
-              initValue={ROWS_TYPE}
+              initValue={type === 'intervals'}
             />
           </View>
           <View style={styles.setting}>
             <Text>Excerciese break</Text>
-            <TouchableWithoutFeedback>
-              <Text
-                style={styles.time}
-                onPress={() => {
-                  setOpenedExcTimer(true);
-                }}
-              >
-                {excBreak}
+            <TouchableWithoutFeedback
+              onPress={() => {
+                console.log('set opened');
+                setOpenedExcTimer(true);
+              }}
+            >
+              <Text style={styles.time}>
+                {timerToString(exerciseBreak)}
               </Text>
             </TouchableWithoutFeedback>
           </View>
           <View style={styles.setting}>
-            <Text>{`${type} break`}</Text>
+            <Text>{`${localType} break`}</Text>
             <TouchableWithoutFeedback
               onPress={() => {
                 setOpenedTypeTimer(true);
               }}
             >
-              <Text style={styles.time}>{typeBreak}</Text>
+              <Text style={styles.time}>
+                {timerToString(typeBreak)}
+              </Text>
             </TouchableWithoutFeedback>
           </View>
         </View>
         {openedExcTimer ? (
           <TimeSelector
             title={'Excercise break:'}
-            onConfirm={(minutes, seconds) => {}}
+            onConfirm={(minutes, seconds) => {
+              props.saveExerciseBreak(
+                workout_id,
+                fromTimer(minutes, seconds),
+              );
+            }}
             setOpened={setOpenedExcTimer}
             opened={openedExcTimer}
           />
         ) : null}
         {openedTypeTimer ? (
           <TimeSelector
-            title={`${type} break:`}
+            title={`${localType} break:`}
             setOpened={setOpenedTypeTimer}
-            onConfirm={(minutes, seconds) => {}}
+            onConfirm={(minutes, seconds) => {
+              console.log(minutes, seconds);
+
+              props.saveTypeBreak(
+                workout_id,
+                fromTimer(minutes, seconds),
+              );
+            }}
             opened={openedTypeTimer}
           />
         ) : null}
@@ -127,7 +172,11 @@ const Settings = ({ opened, setOpened }: Props) => {
   );
 };
 
-export default Settings;
+export default connect(null, {
+  saveTypeWorkout,
+  saveExerciseBreak,
+  saveTypeBreak,
+})(Settings);
 
 const styles = StyleSheet.create({
   container: {

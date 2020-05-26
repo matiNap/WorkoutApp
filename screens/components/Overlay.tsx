@@ -24,6 +24,7 @@ const Overlay = ({
     duration: 150,
     easing: Easing.inOut(Easing.exp),
   });
+
   return (
     <Animated.View
       style={[

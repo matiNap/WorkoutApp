@@ -1,6 +1,7 @@
 export type exerciseType = 'reps' | 'time';
 
 export interface exercise {
+  id: string;
   name: string;
   type: exerciseType;
   value: number;

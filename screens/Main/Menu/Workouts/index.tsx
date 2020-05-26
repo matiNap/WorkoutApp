@@ -6,7 +6,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import metrics from '_metrics';
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 import { createWorkout } from '_actions/creators/workout';
-import { connect, createSelectorHook } from 'react-redux';
+import { connect } from 'react-redux';
 
 interface Props {
   createWorkout: typeof createWorkout;

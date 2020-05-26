@@ -6,22 +6,20 @@ import { useTransition } from 'react-native-redash';
 import Animated, {
   Easing,
   interpolate,
-  useCode,
 } from 'react-native-reanimated';
 import palette from '_palette';
-import typography from '_typography';
 
 interface Props {
   left: string;
   right: string;
   onChange: (newValue: string) => void;
-  initValue: string;
+  initValue: boolean;
 }
 
 const { cond, eq, call } = Animated;
 
 const Switch = ({ left, right, onChange, initValue }: Props) => {
-  const [swtich, setSwitch] = useState(initValue === left);
+  const [swtich, setSwitch] = useState(initValue);
   const transitionValue = useTransition(swtich, {
     duration: 150,
     easing: Easing.inOut(Easing.ease),
@@ -30,26 +28,16 @@ const Switch = ({ left, right, onChange, initValue }: Props) => {
     inputRange: [0, 1],
     outputRange: [0, 65],
   });
-  useCode(
-    () => [
-      cond(
-        eq(transitionValue, 1),
-        [
-          call([], () => {
-            onChange(right);
-          }),
-        ],
-        call([], () => {
-          onChange(left);
-        }),
-      ),
-    ],
-    [],
-  );
+
   return (
     <TouchableWithoutFeedback
       onPress={() => {
         setSwitch(!swtich);
+        if (swtich) {
+          onChange(left);
+        } else {
+          onChange(right);
+        }
       }}
     >
       <View style={styles.container}>

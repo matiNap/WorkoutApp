@@ -9,12 +9,14 @@ import Animated, { useCode, Easing } from 'react-native-reanimated';
 import {
   PanGestureHandler,
   State,
+  TouchableWithoutFeedback,
 } from 'react-native-gesture-handler';
 import {
   onGestureEvent,
   timing,
   approximates,
 } from 'react-native-redash';
+import { timerToString } from '_helpers';
 
 const { cond, set, add, eq, floor, multiply, divide } = Animated;
 
@@ -26,6 +28,7 @@ interface Props {
   translateY: Animated.Node<number>;
   index: number;
   values: Animated.Node<number>[];
+  onPress: () => void;
 }
 
 const ITEM_HEIGHT = 55;
@@ -38,6 +41,7 @@ const ExcItem = ({
   listLength,
   index,
   values,
+  onPress,
 }: Props) => {
   const absoluteY = new Animated.Value(0);
   const currentIndex = new Animated.Value(index);
@@ -95,22 +99,26 @@ const ExcItem = ({
   );
 
   return (
-    <Animated.View style={[styles.container, { translateY }]}>
-      <View style={styles.left}>
-        <Text style={styles.text}>{title}</Text>
-        {type === 'reps' ? (
-          <Text style={styles.subText}>{`Reps: ${value}`}</Text>
-        ) : (
-          <Text style={styles.subText}>{`Time: ${value}`}</Text>
-        )}
-      </View>
+    <TouchableWithoutFeedback {...{ onPress }}>
+      <Animated.View style={[styles.container, { translateY }]}>
+        <View style={styles.left}>
+          <Text style={styles.text}>{title}</Text>
+          {type === 'reps' ? (
+            <Text style={styles.subText}>{`Reps: ${value}`}</Text>
+          ) : (
+            <Text style={styles.subText}>{`Time: ${timerToString(
+              value,
+            )}`}</Text>
+          )}
+        </View>
 
-      <PanGestureHandler {...gestureHandler}>
-        <Animated.View style={styles.right}>
-          <MaterialIcons name="drag-handle" style={styles.icon} />
-        </Animated.View>
-      </PanGestureHandler>
-    </Animated.View>
+        <PanGestureHandler {...gestureHandler}>
+          <Animated.View style={styles.right}>
+            <MaterialIcons name="drag-handle" style={styles.icon} />
+          </Animated.View>
+        </PanGestureHandler>
+      </Animated.View>
+    </TouchableWithoutFeedback>
   );
 };
 

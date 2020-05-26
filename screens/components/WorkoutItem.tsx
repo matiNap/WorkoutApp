@@ -5,11 +5,15 @@ import { Divider, Text } from 'react-native-elements';
 import typography from '_typography';
 import palette from '_palette';
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
+import { workoutType } from '_types';
+import { useNavigation } from '@react-navigation/native';
 
 interface Props {
   divider: boolean;
   title: string;
   time: number;
+  type: workoutType;
+  workout_id: number;
 }
 
 const withZero = (num: number): string => {
@@ -26,13 +30,26 @@ const formatTime = (time: number): string => {
   )}:${withZero(time % 60)}`;
 };
 
-const WorkoutItem = ({ divider, title, time }: Props) => {
+const WorkoutItem = ({
+  divider,
+  title,
+  time,
+  type,
+  workout_id,
+}: Props) => {
+  const navigation = useNavigation();
   return (
-    <TouchableWithoutFeedback>
+    <TouchableWithoutFeedback
+      onPress={() => {
+        navigation.navigate('Creator', { workout_id });
+      }}
+    >
       <View>
         <View style={styles.infoContainer}>
           <Text>{title}</Text>
-          <Text style={styles.subText}>{formatTime(time)}</Text>
+          {type === 'intervals' && (
+            <Text style={styles.subText}>{formatTime(time)}</Text>
+          )}
         </View>
         {divider && <Divider style={styles.divider} />}
       </View>

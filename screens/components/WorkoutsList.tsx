@@ -5,7 +5,6 @@ import { ScrollView } from 'react-native-gesture-handler';
 import WorkoutItem from './WorkoutItem';
 import { useSelector } from 'react-redux';
 import { RootState } from '_rootReducer';
-import reactotron from 'reactotronConfig';
 
 const WorkoutsList = () => {
   const workouts = useSelector((state: RootState) => state.workouts);
@@ -18,7 +17,12 @@ const WorkoutsList = () => {
         showsVerticalScrollIndicator={false}
       >
         {workouts.map((workout) => (
-          <WorkoutItem title={workout.name} divider />
+          <WorkoutItem
+            title={workout.name}
+            divider
+            key={workout.workout_id}
+            workout_id={workout.workout_id}
+          />
         ))}
       </ScrollView>
     </View>
