@@ -1,20 +1,22 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import ExcItem from './ExcItem';
 import { workout, exercise } from '_types';
 import Edit from './Edit';
+import AddButton from './AddButton';
 
 interface Props {
   data: exercise[];
-  workout_id: number;
+  id: string;
+  addButton: ({ addValue }: { addValue: () => void }) => ReactNode;
 }
 
 class DraggableList extends React.Component<Props> {
   values: Animated.Value<0>[];
 
   state = {
-    editOpened: false,
+    selected: null,
   };
 
   constructor(props: Props) {
@@ -22,20 +24,20 @@ class DraggableList extends React.Component<Props> {
     const { data } = props;
     this.values = data.map(() => new Animated.Value(0));
   }
-  setEditOpend = (opened: boolean) => {
-    this.setState({ editOpened: opened });
+  unselect = () => {
+    this.setState({ selected: null });
   };
   render() {
-    const { data, workout_id } = this.props;
-    const { editOpened } = this.state;
-    console.log(editOpened);
+    const { data, id, addButton } = this.props;
+    const { selected } = this.state;
+
     return (
       <View style={{ flex: 1 }}>
         <Animated.ScrollView contentContainerStyle={{ flex: 1 }}>
           {data.map((item, index) => (
             <ExcItem
               onPress={() => {
-                this.setState({ editOpened: item.id });
+                this.setState({ selected: item.id });
               }}
               {...{ translateY: this.values[index], index }}
               value={item.value}
@@ -43,19 +45,25 @@ class DraggableList extends React.Component<Props> {
               type={item.type}
               listLength={data.length}
               values={this.values}
-              key={`exc${index}`}
+              key={item.id}
+              id={item.id}
             />
           ))}
+          {addButton &&
+            addButton({
+              addValue: () => {
+                this.values.push(new Animated.Value(0));
+              },
+            })}
         </Animated.ScrollView>
-        {editOpened && (
-          <Edit
-            setOpened={this.setEditOpend}
-            title="Edit exercise: "
-            opened={editOpened}
-            exercise_id={editOpened}
-            {...{ workout_id }}
-          />
-        )}
+
+        <Edit
+          setOpened={this.unselect}
+          title="Edit exercise: "
+          opened={selected !== null}
+          exercise_id={selected}
+          {...{ workout_id: id }}
+        />
       </View>
     );
   }

@@ -17,6 +17,8 @@ import {
   approximates,
 } from 'react-native-redash';
 import { timerToString } from '_helpers';
+import { connect } from 'react-redux';
+import { deleteExercise } from '_actions/creators/workout';
 
 const { cond, set, add, eq, floor, multiply, divide } = Animated;
 
@@ -29,6 +31,9 @@ interface Props {
   index: number;
   values: Animated.Node<number>[];
   onPress: () => void;
+  workout_id: string;
+  deleteExercise: typeof deleteExercise;
+  id: string;
 }
 
 const ITEM_HEIGHT = 55;
@@ -41,7 +46,10 @@ const ExcItem = ({
   listLength,
   index,
   values,
+  workout_id,
+  id,
   onPress,
+  ...props
 }: Props) => {
   const absoluteY = new Animated.Value(0);
   const currentIndex = new Animated.Value(index);
@@ -118,11 +126,18 @@ const ExcItem = ({
           </Animated.View>
         </PanGestureHandler>
       </Animated.View>
+      {/* <MaterialIcons
+        name="delete"
+        style={{ fontSize: 30, color: 'white' }}
+        onPress={() => {
+          props.deleteExercise(workout_id, id);
+        }}
+      /> */}
     </TouchableWithoutFeedback>
   );
 };
 
-export default ExcItem;
+export default connect(null, { deleteExercise })(ExcItem);
 
 const styles = StyleSheet.create({
   container: {

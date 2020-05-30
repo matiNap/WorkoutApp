@@ -19,7 +19,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 interface Props {
   range: number[];
   setIndex: (val: number) => void;
-  label: string;
+  label?: string;
 }
 
 const {
@@ -39,12 +39,12 @@ const CELL_HEIGHT = 40;
 
 const AText = Animated.createAnimatedComponent(Text);
 
-const Roll = ({ range, setIndex, label }: Props) => {
+const Roll = ({ range, setIndex, label, selectedIndex }: Props) => {
   const clock = new Clock();
   const values = range;
   const maxHeight = values.length * CELL_HEIGHT;
   const snapPoints = values.map((_, i) => (i - 1) * -CELL_HEIGHT);
-  const translationY = useValue(0);
+  const translationY = useValue(CELL_HEIGHT);
   const offsetY = useValue(0);
   const {
     gestureHandler,

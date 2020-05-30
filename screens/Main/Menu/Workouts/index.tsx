@@ -1,38 +1,37 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet, StatusBar } from 'react-native';
 import palette from '_palette';
 import WorkoutsList from '_components/WorkoutsList';
-import { MaterialIcons } from '@expo/vector-icons';
-import metrics from '_metrics';
-import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
-import { createWorkout } from '_actions/creators/workout';
-import { connect } from 'react-redux';
+import { Easing } from 'react-native-reanimated';
+import AddWorkout from './components/AddWorkout';
+import {
+  useTransition,
+  useSpringTransition,
+} from 'react-native-redash';
+import LeftEditButton from './components/LeftEditButton';
 
-interface Props {
-  createWorkout: typeof createWorkout;
-  navigation: any;
-}
-
-const Workouts = (props: Props) => {
-  const { navigation } = props;
+const Workouts = () => {
+  const [editOpened, setEditOpened] = useState(false);
+  const transitionValue = useSpringTransition(editOpened, {
+    // duration: 300,
+    easing: Easing.inOut(Easing.exp),
+  });
   return (
     <View style={styles.container}>
-      <WorkoutsList />
-      <View style={styles.addContainer}>
-        <TouchableWithoutFeedback
-          onPress={() => {
-            navigation.navigate('Creator');
-            props.createWorkout();
-          }}
-        >
-          <MaterialIcons name="add" style={styles.addIcon} />
-        </TouchableWithoutFeedback>
-      </View>
+      <WorkoutsList
+        {...{ setEditOpened, editOpened, transitionValue }}
+      />
+      <AddWorkout {...{ transitionValue }} />
+
+      <LeftEditButton
+        {...{
+          transitionValue,
+          onPress: () => setEditOpened(false),
+        }}
+      />
     </View>
   );
 };
-
-const ADD_SIZE = metrics.width * 0.17;
 
 const styles = StyleSheet.create({
   container: {
@@ -41,21 +40,6 @@ const styles = StyleSheet.create({
     paddingTop: StatusBar.currentHeight + 15,
     paddingHorizontal: 10,
   },
-  addContainer: {
-    backgroundColor: palette.primary,
-    width: ADD_SIZE,
-    height: ADD_SIZE,
-    justifyContent: 'center',
-    borderRadius: ADD_SIZE,
-    position: 'absolute',
-    bottom: 30,
-    right: 30,
-  },
-  addIcon: {
-    fontSize: 35,
-    color: palette.text.primary,
-    alignSelf: 'center',
-  },
 });
 
-export default connect(null, { createWorkout })(Workouts);
+export default Workouts;

@@ -1,14 +1,27 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-elements';
-import { ScrollView } from 'react-native-gesture-handler';
+import {
+  ScrollView,
+  TouchableWithoutFeedback,
+} from 'react-native-gesture-handler';
 import WorkoutItem from './WorkoutItem';
-import { useSelector } from 'react-redux';
+import Animated from 'react-native-reanimated';
+import { connect } from 'react-redux';
 import { RootState } from '_rootReducer';
 
-const WorkoutsList = () => {
-  const workouts = useSelector((state: RootState) => state.workouts);
+interface Props {
+  setEditOpened: (value: boolean) => void;
+  editOpened: boolean;
+  transitionValue: Animated.Node<number>;
+}
 
+const WorkoutsList = ({
+  setEditOpened,
+  editOpened,
+  transitionValue,
+  workouts,
+}: Props) => {
   return (
     <View style={{ flex: 1 }}>
       <Text style={styles.title}>Workouts: </Text>
@@ -17,26 +30,41 @@ const WorkoutsList = () => {
         showsVerticalScrollIndicator={false}
       >
         {workouts.map((workout) => (
-          <WorkoutItem
-            title={workout.name}
-            divider
-            key={workout.workout_id}
-            workout_id={workout.workout_id}
-          />
+          <TouchableWithoutFeedback
+            onLongPress={() => {
+              setEditOpened(true);
+            }}
+          >
+            <WorkoutItem
+              title={workout.name}
+              divider
+              key={workout.id}
+              id={workout.id}
+              {...{ editOpened, transitionValue }}
+              closeEdit={() => setEditOpened(false)}
+              length={workouts.length}
+            />
+          </TouchableWithoutFeedback>
         ))}
       </ScrollView>
     </View>
   );
 };
 
-export default WorkoutsList;
+const mapStateToProps = (state: RootState) => {
+  return {
+    workouts: state.workouts,
+  };
+};
+
+export default connect(mapStateToProps)(WorkoutsList);
 
 const styles = StyleSheet.create({
   list: {
     marginTop: 10,
   },
   title: {
-    fontSize: 22,
+    fontSize: 25,
     fontWeight: 'bold',
   },
 });

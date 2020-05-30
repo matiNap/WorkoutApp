@@ -5,6 +5,7 @@ import Roll from './Roll';
 import metrics from '_metrics';
 import ExitButtons from '_components/ExitButtons';
 import palette from '_palette';
+import Overlay from '_components/Overlay';
 
 const RANGE: any[] = [
   '00',
@@ -84,18 +85,17 @@ const TimeSelector = ({
   opened,
   onConfirm,
 }: Props) => {
-  const [minutes, setMinutes] = useState(-1);
-  const [seconds, setSeconds] = useState(-1);
+  const [minutes, setMinutes] = useState(0);
+  const [seconds, setSeconds] = useState(0);
   BackHandler.addEventListener('hardwareBackPress', () => {
     if (opened) {
       setOpened(false);
       return true;
     }
   });
-
   if (!opened) return null;
   return (
-    <View style={[StyleSheet.absoluteFill, styles.background]}>
+    <Overlay {...{ opened, close: () => setOpened(false) }}>
       <View style={styles.container}>
         <Text style={styles.title}>{title}</Text>
         <View style={styles.rolls}>
@@ -109,7 +109,7 @@ const TimeSelector = ({
           }}
         />
       </View>
-    </View>
+    </Overlay>
   );
 };
 
@@ -123,23 +123,7 @@ const styles = StyleSheet.create({
     left: 0,
   },
   container: {
-    justifyContent: 'center',
-    width: WIDTH,
-    position: 'absolute',
-    top: metrics.height / 2 - HEIGHT / 2,
-    left: metrics.width / 2 - WIDTH / 2,
-    zIndex: 160,
-    alignSelf: 'center',
-    backgroundColor: palette.secondary,
-    borderRadius: 10,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    flex: 1,
   },
   rolls: {
     flexDirection: 'row',

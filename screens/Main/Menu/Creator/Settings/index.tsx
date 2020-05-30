@@ -32,7 +32,7 @@ interface Props {
   saveTypeWorkout: typeof saveTypeWorkout;
   saveTypeBreak: typeof saveTypeBreak;
   saveExerciseBreak: typeof saveExerciseBreak;
-  workout_id: number;
+  id: string;
   type: workoutType;
   typeBreak: number;
   exerciseBreak: number;
@@ -44,18 +44,12 @@ const ROWS_TYPE = 'Interv';
 const Settings = ({
   opened,
   setOpened,
-  workout_id,
+  id,
   type,
   typeBreak,
   exerciseBreak,
   ...props
 }: Props) => {
-  // BackHandler.addEventListener('hardwareBackPress', () => {
-  //   if (opened) {
-  //     setOpened(false);
-  //     return true;
-  //   }
-  // });
   const navigation = useNavigation();
   const transitionValue = useTransition(opened, {
     duration: 300,
@@ -99,14 +93,13 @@ const Settings = ({
               left={SERIES_TYPE}
               right={ROWS_TYPE}
               onChange={(newValue) => {
-                reactotron.log(newValue);
                 if (newValue === 'Interv') {
                   setType('Intervals');
                 } else {
                   setType('Series');
                 }
                 props.saveTypeWorkout(
-                  workout_id,
+                  id,
                   newValue === 'Interv' ? 'intervals' : 'series',
                 );
               }}
@@ -144,7 +137,7 @@ const Settings = ({
             title={'Excercise break:'}
             onConfirm={(minutes, seconds) => {
               props.saveExerciseBreak(
-                workout_id,
+                id,
                 fromTimer(minutes, seconds),
               );
             }}
@@ -157,12 +150,7 @@ const Settings = ({
             title={`${localType} break:`}
             setOpened={setOpenedTypeTimer}
             onConfirm={(minutes, seconds) => {
-              console.log(minutes, seconds);
-
-              props.saveTypeBreak(
-                workout_id,
-                fromTimer(minutes, seconds),
-              );
+              props.saveTypeBreak(id, fromTimer(minutes, seconds));
             }}
             opened={openedTypeTimer}
           />

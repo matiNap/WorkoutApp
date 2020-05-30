@@ -1,9 +1,10 @@
-import React, { ReactNode, CSSProperties } from 'react';
-import { StyleSheet, View } from 'react-native';
+import React, { ReactNode, CSSProperties, useState } from 'react';
+import { StyleSheet, BackHandler } from 'react-native';
 import metrics from '_metrics';
 import { useTransition } from 'react-native-redash';
 import Animated, { Easing } from 'react-native-reanimated';
 import palette from '_palette';
+import { approximates } from 'react-native-redash';
 
 interface Props {
   width?: number;
@@ -11,19 +12,30 @@ interface Props {
   opened: boolean;
   children: ReactNode;
   style?: CSSProperties;
-  absoluteComponent: () => ReactNode;
+  absoluteComponent?: () => ReactNode;
+  close: () => void;
 }
+
+const { useCode, cond, call, greaterOrEq } = Animated;
 
 const Overlay = ({
   style,
   opened,
   children,
   absoluteComponent,
+  close,
 }: Props) => {
+  BackHandler.addEventListener('hardwareBackPress', () => {
+    if (opened) {
+      close();
+      return true;
+    }
+  });
   const transitionValue = useTransition(opened, {
     duration: 150,
     easing: Easing.inOut(Easing.exp),
   });
+  const [toRender, setToRender] = useState(opened);
 
   return (
     <Animated.View

@@ -22,41 +22,38 @@ import {
   saveNameWorkout,
   addExercise,
 } from '_actions/creators/workout';
-import reactotron from 'reactotron-react-native';
+
+import _ from 'lodash';
+import reactotron from 'reactotronConfig';
+import { timerToString } from '_helpers';
 
 interface Props {
   route: {
     params: {
-      workout_id: number;
+      id: number;
+      add: boolean;
     };
   };
   saveNameWorkout: typeof saveNameWorkout;
   addExercise: typeof addExercise;
-  exercises: exercise[];
+  workout: workout;
 }
 
-const Creator = ({
-  route: { params },
-  exercises,
-  ...props
-}: Props) => {
-  const { workout_id } = params;
-
-  const workout: workout = useSelector(
-    (state: RootState) => state.workouts[workout_id - 1],
-  );
+const Creator = ({ workout, ...props }: Props) => {
   const {
     type,
     exerciseBreak,
     typeBreak,
     name: workoutTitle,
+    exercises,
+    id,
+    time,
   } = workout;
   const [name, setName] = useState(workoutTitle);
   const [settingsOpened, setSettingsOpened] = useState(false);
   const [addOpened, setAddOpened] = useState(false);
   const navigation = useNavigation();
   BackHandler.addEventListener('hardwareBackPress', () => {
-    console.log(settingsOpened);
     if (settingsOpened) {
       setSettingsOpened(false);
       return true;
@@ -64,7 +61,7 @@ const Creator = ({
 
     navigation.goBack();
   });
-  console.log(exercises);
+
   return (
     <View style={styles.container}>
       <Header>
@@ -81,7 +78,7 @@ const Creator = ({
               setName(text);
             }}
             onEndEditing={() => {
-              props.saveNameWorkout(workout_id, name);
+              props.saveNameWorkout(id, name);
             }}
           />
           <AntDesign name="edit" style={styles.editIcon} />
@@ -92,8 +89,8 @@ const Creator = ({
             alignItems: 'center',
           }}
         >
-          {type === 'intervals' && (
-            <Text style={styles.time}>22:00</Text>
+          {type === 'intervals' && time !== -1 && (
+            <Text style={styles.time}>{timerToString(time)}</Text>
           )}
           <TouchableWithoutFeedback
             onPress={() => {
@@ -113,29 +110,51 @@ const Creator = ({
         title="Add excercise: "
         add
         onConfirm={(exc: exercise) => {
-          props.addExercise(workout_id, exc);
+          props.addExercise(id, exc);
         }}
       />
-      <DraggableList data={exercises} {...{ workout_id }} />
-      <AddButton
-        onPress={() => {
-          setAddOpened(true);
-        }}
+      <DraggableList
+        data={exercises}
+        {...{ id }}
+        addButton={({ addValue }) => (
+          <AddButton
+            onPress={() => {
+              setAddOpened(true);
+              addValue();
+            }}
+          />
+        )}
       />
 
       <Settings
         opened={settingsOpened}
         setOpened={setSettingsOpened}
-        {...{ workout_id, type, exerciseBreak, typeBreak }}
+        {...{ id, type, exerciseBreak, typeBreak }}
       />
     </View>
   );
 };
 
 const mapStateToProps = (state: RootState, ownProps: Props) => {
-  const { workout_id } = ownProps.route.params;
+  const { add } = ownProps.route.params;
+  const { workouts } = state;
+  if (add) {
+    const workout = workouts[workouts.length - 1];
+
+    return {
+      workout: workout
+        ? workout
+        : { type: null, exercises: [], name: 'Workout name' },
+    };
+  }
+
+  const { id } = ownProps.route.params;
+
   return {
-    exercises: state.workouts[workout_id - 1].exercises,
+    workout:
+      state.workouts[
+        _.findIndex(workouts, ({ id: currentId }) => currentId === id)
+      ],
   };
 };
 
@@ -153,6 +172,7 @@ const styles = StyleSheet.create({
   left: {
     flexDirection: 'row',
     alignItems: 'center',
+    width: '70%',
   },
   headerIcon: {
     color: palette.text.primary,
@@ -160,13 +180,13 @@ const styles = StyleSheet.create({
   },
   textInput: {
     color: palette.text.primary,
-    fontSize: typography.fontSize.header,
+    fontSize: typography.fontSize.medium,
     marginLeft: 10,
     fontFamily: typography.fonts.primary,
     width: '60%',
   },
   time: {
-    fontSize: 19,
+    fontSize: 16,
     marginRight: 10,
     color: palette.grayscale.light,
   },

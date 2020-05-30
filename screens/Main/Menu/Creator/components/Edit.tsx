@@ -12,53 +12,56 @@ import {
 import typography from '_typography';
 import palette from '_palette';
 import stylesheet from '_stylesheet';
-import { workoutType, exerciseType, exercise } from '_types';
+import { exerciseType, exercise } from '_types';
 import { editExercise } from '_actions/creators/workout';
 import { connect } from 'react-redux';
 import { RootState } from '_rootReducer';
-import reactotron from 'reactotronConfig';
+import _ from 'lodash';
 import { fromTimer, timerToString } from '_helpers';
 import uid from 'uid';
+import ValueSelector from '_components/ValueSelector';
 
 interface Props {
   setOpened: (opened: boolean) => void;
-  title: string;
   opened: boolean;
-  type: exerciseType;
-  workout_id: number;
+  workout_id: string;
   exercise_id?: string;
   editExercise: typeof editExercise;
-  value: number;
-  name: string;
+  exercise: exercise;
   add: boolean;
+  title: string;
   onConfirm: (exc: exercise) => void;
 }
 
 const Edit = ({
   opened,
   setOpened,
-  title,
-  type,
-  name,
-  value,
   workout_id,
   exercise_id,
   onConfirm,
   add,
+  exercise,
+  title,
   ...props
 }: Props) => {
+  const { type, name, value } = exercise
+    ? exercise
+    : { type: null, name: null, value: null };
   const [openedTimeSelector, setOpenedTimeSelector] = useState(false);
   const [localType, setLocalType] = useState('reps');
-  const [localName, setLocalName] = useState('Push up');
+  const [localName, setLocalName] = useState(
+    add ? 'Enter name' : name,
+  );
   const [localValue, setLocalValue] = useState(0);
   const excType = add ? localType : type;
   const excValue = add ? localValue : value;
+  const toRender = exercise_id || add;
 
   return (
     <Overlay
-      {...{ opened }}
+      {...{ opened, close: () => setOpened(false) }}
       absoluteComponent={() => {
-        if (excType === 'time') {
+        if (excType === 'time' && toRender) {
           return (
             <TimeSelector
               opened={openedTimeSelector}
@@ -76,96 +79,135 @@ const Edit = ({
               }}
             />
           );
-        } else {
-          return null;
+        } else if (toRender) {
+          return (
+            <ValueSelector
+              opened={openedTimeSelector}
+              setOpened={setOpenedTimeSelector}
+              title="Reps: "
+              onConfirm={(value) => {
+                if (add) {
+                  setLocalValue(value);
+                } else {
+                  props.editExercise(workout_id, exercise_id, {
+                    value,
+                  });
+                }
+              }}
+            />
+          );
         }
       }}
     >
-      <Text style={styles.title}>{title}</Text>
-      <View style={styles.settingsContainer}>
-        <View style={styles.setting}>
-          <Text>Name:</Text>
-          <TextInput
-            value={localName}
-            onChangeText={(text) => {
-              setLocalName(text);
-            }}
-            placeholder="Enter a name"
-            style={styles.textInput}
-            placeholderTextColor={palette.text.gray}
-            onEndEditing={() => {
-              if (!add) {
-                props.editExercise(workout_id, exercise_id, {
+      {toRender && (
+        <View style={{ flex: 1, justifyContent: 'space-between' }}>
+          <Text style={styles.title}>{title}</Text>
+          <View style={styles.settingsContainer}>
+            <View style={styles.setting}>
+              <Text>Name:</Text>
+              <TextInput
+                value={localName}
+                onChangeText={(text) => {
+                  setLocalName(text);
+                }}
+                placeholder="Enter a name"
+                style={styles.textInput}
+                placeholderTextColor={palette.text.gray}
+                onChange={() => {
+                  if (!add) {
+                    props.editExercise(workout_id, exercise_id, {
+                      name: localName,
+                    });
+                  }
+                }}
+                onEndEditing={() => {
+                  if (!add) {
+                    props.editExercise(workout_id, exercise_id, {
+                      name: localName,
+                    });
+                  }
+                }}
+              />
+            </View>
+            <View style={styles.setting}>
+              <Text>Type:</Text>
+              <Switch
+                onChange={(newValue) => {
+                  const newType =
+                    newValue === 'Reps' ? 'reps' : 'time';
+                  if (add) {
+                    setLocalType(newType);
+                  } else {
+                    props.editExercise(workout_id, exercise_id, {
+                      type: newType,
+                    });
+                  }
+                }}
+                initValue={excType !== 'reps'}
+                left="Reps"
+                right="Time"
+              />
+            </View>
+            <View style={styles.setting}>
+              <Text>Value: </Text>
+              <TouchableWithoutFeedback
+                onPress={() => {
+                  setOpenedTimeSelector(true);
+                }}
+              >
+                <Text style={stylesheet.subText}>
+                  {excType === 'reps'
+                    ? excValue
+                    : timerToString(excValue)}
+                </Text>
+              </TouchableWithoutFeedback>
+            </View>
+          </View>
+          {add ? (
+            <ExitButtons
+              {...{ setOpened }}
+              onConfirm={() => {
+                const exc: exercise = {
                   name: localName,
-                });
-              }
-            }}
-          />
+                  type: localType,
+                  value: localValue,
+                  id: uid(),
+                };
+                onConfirm(exc);
+              }}
+            />
+          ) : (
+            <TouchableWithoutFeedback
+              onPress={() => {
+                setOpened(false);
+              }}
+            >
+              <Text style={styles.endEditText}>OK</Text>
+            </TouchableWithoutFeedback>
+          )}
         </View>
-        <View style={styles.setting}>
-          <Text>Type:</Text>
-          <Switch
-            onChange={(newValue) => {
-              if (add) {
-                setLocalType(newValue === 'Reps' ? 'reps' : 'time');
-              } else {
-                props.editExercise(workout_id, exercise_id, {
-                  type: newValue,
-                });
-              }
-            }}
-            initValue={excType === 'reps'}
-            left="Reps"
-            right="Time"
-          />
-        </View>
-        <View style={styles.setting}>
-          <Text>Value: </Text>
-          <TouchableWithoutFeedback
-            onPress={() => {
-              setOpenedTimeSelector(true);
-            }}
-          >
-            <Text style={stylesheet.subText}>
-              {excType === 'reps'
-                ? excValue
-                : timerToString(excValue)}
-            </Text>
-          </TouchableWithoutFeedback>
-        </View>
-      </View>
-
-      <ExitButtons
-        {...{ setOpened }}
-        onConfirm={() => {
-          const exc: exercise = {
-            name: localName,
-            type: localType,
-            value: localValue,
-            id: uid(),
-          };
-          onConfirm(exc);
-        }}
-      />
+      )}
     </Overlay>
   );
 };
 
 const mapStateToProps = (state: RootState, ownProps: Props) => {
-  if (!ownProps.add) {
-    const { exercises } = state.workouts[ownProps.workout_id];
-    const exc = exercises[ownProps.exercise_id];
+  const { add, workout_id, exercise_id } = ownProps;
+  if (!add && exercise_id) {
+    const { exercises } = state.workouts[
+      _.findIndex(
+        state.workouts,
+        ({ id: currentId }) => currentId === workout_id,
+      )
+    ];
 
-    reactotron.log(exc);
+    const exercise =
+      exercises[_.findIndex(exercises, { id: exercise_id })];
 
-    const { type, name, value } = exc;
     return {
-      type,
-      name,
-      value,
+      exercise,
     };
   }
-
   return {};
 };
 
@@ -192,5 +234,11 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.normal,
     color: palette.text.primary,
     width: '50%',
+  },
+  endEditText: {
+    fontSize: 25,
+    color: palette.text.primary,
+    alignSelf: 'center',
+    marginBottom: 10,
   },
 });

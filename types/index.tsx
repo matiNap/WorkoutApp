@@ -15,4 +15,8 @@ export interface workout {
   type: workoutType;
   exerciseBreak: number;
   typeBreak: number;
+  workout_id: number;
+  id: string;
+  loop: number;
+  time: number;
 }

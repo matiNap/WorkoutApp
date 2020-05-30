@@ -14,7 +14,7 @@ export default {
   },
   grayscale: {
     light: '#696969',
-    medium: '#595959',
+    medium: '#797979',
     dark: '#1c1c1c',
   },
 };
