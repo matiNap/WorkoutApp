@@ -1,12 +1,40 @@
 {
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
+    "baseUrl": "./",
+    "allowJs": true,
+    "paths": {
+      "_actions/*": ["./actions/*"],
+      "_apis/*": ["./apis/*"],
+      "_assets/*": ["./assets/*"],
+      "_helpers": ["./helpers/index"],
+      "_components/*": ["./screens/components/*"],
+      "_typography": ["./theme/typography"],
+      "_palette": ["./theme/palette"],
+      "_metrics": ["./theme/metrics"],
+      "_globals": ["./theme/globals"],
+      "_zIndex": ["./theme/zIndex"],
+      "_types": ["./types/index"],
+      "_stylesheet": ["./theme/stylesheet"],
+      "_rootReducer": ["./reducers/index"]
+    },
     "jsx": "react-native",
     "lib": ["dom", "esnext"],
     "moduleResolution": "node",
     "noEmit": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "strict": true
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true
   }
 }
