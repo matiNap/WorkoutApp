@@ -43,6 +43,8 @@ const WorkoutsList = ({
               {...{ editOpened, transitionValue }}
               closeEdit={() => setEditOpened(false)}
               length={workouts.length}
+              time={workout.time}
+              type={workout.type}
             />
           </TouchableWithoutFeedback>
         ))}

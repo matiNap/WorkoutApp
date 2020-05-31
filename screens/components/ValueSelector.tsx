@@ -15,7 +15,7 @@ interface Props {
 }
 const createRange = () => {
   let values = [];
-  for (let i = 0; i < 100; i++) values.push(i);
+  for (let i = 1; i < 100; i++) values.push(i);
 
   return values;
 };

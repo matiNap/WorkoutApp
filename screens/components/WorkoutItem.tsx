@@ -11,6 +11,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import Animated from 'react-native-reanimated';
 import { connect } from 'react-redux';
 import { deleteWorkout } from '_actions/creators/workout';
+import { timerToString } from '_helpers';
 
 interface Props {
   divider: boolean;
@@ -83,10 +84,10 @@ const WorkoutItem = ({
             </Animated.View>
           )}
           {type === 'intervals' && !editOpened && (
-            <Text style={styles.subText}>{formatTime(time)}</Text>
+            <Text style={styles.subText}>{timerToString(time)}</Text>
           )}
         </View>
-        {divider && <Divider style={styles.divider} />}
+        {/* {divider && <Divider style={styles.divider} />} */}
       </View>
     </TouchableWithoutFeedback>
   );

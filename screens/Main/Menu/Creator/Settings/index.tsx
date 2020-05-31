@@ -20,11 +20,12 @@ import {
   saveTypeWorkout,
   saveExerciseBreak,
   saveTypeBreak,
+  saveLoop,
 } from '_actions/creators/workout';
-import reactotron from 'reactotron-react-native';
 import { workoutType } from '_types';
 import { connect } from 'react-redux';
 import { fromTimer, timerToString } from '_helpers';
+import ValueSelector from '_components/ValueSelector';
 
 interface Props {
   opened: boolean;
@@ -36,6 +37,8 @@ interface Props {
   type: workoutType;
   typeBreak: number;
   exerciseBreak: number;
+  loop: number;
+  saveLoop: typeof saveLoop;
 }
 
 const SERIES_TYPE = 'Series';
@@ -48,6 +51,7 @@ const Settings = ({
   type,
   typeBreak,
   exerciseBreak,
+  loop,
   ...props
 }: Props) => {
   const navigation = useNavigation();
@@ -63,9 +67,11 @@ const Settings = ({
 
   const [openedExcTimer, setOpenedExcTimer] = useState(false);
   const [openedTypeTimer, setOpenedTypeTimer] = useState(false);
+  const [openedLoopValue, setOpenedLoopValue] = useState(false);
   const [localType, setType] = useState(
     type === 'intervals' ? 'Interv' : 'Series',
   );
+  const loopTitle = type === 'intervals' ? 'Intervals' : 'Series';
   return (
     <Animated.View
       style={[
@@ -106,32 +112,46 @@ const Settings = ({
               initValue={type === 'intervals'}
             />
           </View>
-          <View style={styles.setting}>
-            <Text>Excerciese break</Text>
-            <TouchableWithoutFeedback
-              onPress={() => {
-                console.log('set opened');
-                setOpenedExcTimer(true);
-              }}
-            >
+          <TouchableWithoutFeedback
+            onPress={() => {
+              console.log('set opened');
+              setOpenedExcTimer(true);
+            }}
+          >
+            <View style={styles.setting}>
+              <Text>Excerciese break</Text>
+
               <Text style={styles.time}>
                 {timerToString(exerciseBreak)}
               </Text>
-            </TouchableWithoutFeedback>
-          </View>
-          <View style={styles.setting}>
-            <Text>{`${localType} break`}</Text>
-            <TouchableWithoutFeedback
-              onPress={() => {
-                setOpenedTypeTimer(true);
-              }}
-            >
+            </View>
+          </TouchableWithoutFeedback>
+          <TouchableWithoutFeedback
+            onPress={() => {
+              setOpenedTypeTimer(true);
+            }}
+          >
+            <View style={styles.setting}>
+              <Text>{`${localType} break`}</Text>
+
               <Text style={styles.time}>
                 {timerToString(typeBreak)}
               </Text>
-            </TouchableWithoutFeedback>
-          </View>
+            </View>
+          </TouchableWithoutFeedback>
+          <TouchableWithoutFeedback
+            onPress={() => {
+              setOpenedLoopValue(true);
+            }}
+          >
+            <View style={styles.setting}>
+              <Text>{loopTitle}</Text>
+
+              <Text style={styles.time}>{loop}</Text>
+            </View>
+          </TouchableWithoutFeedback>
         </View>
+
         {openedExcTimer ? (
           <TimeSelector
             title={'Excercise break:'}
@@ -155,6 +175,16 @@ const Settings = ({
             opened={openedTypeTimer}
           />
         ) : null}
+        {openedLoopValue ? (
+          <ValueSelector
+            title={loopTitle}
+            setOpened={setOpenedLoopValue}
+            onConfirm={(value) => {
+              props.saveLoop(id, value);
+            }}
+            opened={openedLoopValue}
+          />
+        ) : null}
       </View>
     </Animated.View>
   );
@@ -164,6 +194,7 @@ export default connect(null, {
   saveTypeWorkout,
   saveExerciseBreak,
   saveTypeBreak,
+  saveLoop,
 })(Settings);
 
 const styles = StyleSheet.create({

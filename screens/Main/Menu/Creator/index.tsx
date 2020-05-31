@@ -48,6 +48,7 @@ const Creator = ({ workout, ...props }: Props) => {
     exercises,
     id,
     time,
+    loop,
   } = workout;
   const [name, setName] = useState(workoutTitle);
   const [settingsOpened, setSettingsOpened] = useState(false);
@@ -129,7 +130,7 @@ const Creator = ({ workout, ...props }: Props) => {
       <Settings
         opened={settingsOpened}
         setOpened={setSettingsOpened}
-        {...{ id, type, exerciseBreak, typeBreak }}
+        {...{ id, type, exerciseBreak, typeBreak, loop }}
       />
     </View>
   );

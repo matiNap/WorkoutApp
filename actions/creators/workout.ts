@@ -106,37 +106,43 @@ export const saveExercises = (id: string, exercises: exercise[]) => {
 export const saveTypeWorkout = (id: string, type: workoutType) => (
   dispatch,
 ) => {
-  getDatabase().transaction(
-    (tx) => {
-      tx.executeSql('update workouts set type = ? where id = ?;', [
+  getDatabase().transaction((tx) => {
+    tx.executeSql('update workouts set type = ? where id = ?;', [
+      type,
+      id,
+    ]);
+  });
+  dispatch({
+    type: types.UPDATE_WORKOUT,
+    payload: {
+      id,
+      data: {
         type,
-        id,
-      ]);
+      },
     },
-    (error) => {
-      reactotron.log(error.message);
-    },
-    () => {
-      dispatch({
-        type: types.UPDATE_WORKOUT,
-        payload: {
-          id,
-          data: {
-            type,
-          },
-        },
-      });
-    },
-  );
+  });
 };
 
-export const saveValueWorkout = (id: string, value: number) => {
+export const saveLoop = (id: string, value: number) => (
+  dispatch,
+  getState,
+) => {
   getDatabase().transaction((tx) => {
-    tx.executeSql('update workouts set value = ? where id = ?', [
+    tx.executeSql('update workouts set loop = ? where id = ?', [
       value,
       id,
     ]);
   });
+  dispatch({
+    type: types.UPDATE_WORKOUT,
+    payload: {
+      data: {
+        loop: value,
+      },
+      id,
+    },
+  });
+  updateTime(id)(dispatch, getState);
 };
 
 export const saveExerciseBreak = (id: string, breakValue: number) => (
