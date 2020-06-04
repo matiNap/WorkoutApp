@@ -4,9 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import { Divider, Text } from 'react-native-elements';
 import typography from '_typography';
 import palette from '_palette';
-import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 import { workoutType } from '_types';
-import { useNavigation } from '@react-navigation/native';
 import { FontAwesome } from '@expo/vector-icons';
 import Animated from 'react-native-reanimated';
 import { connect } from 'react-redux';
@@ -26,20 +24,6 @@ interface Props {
   length: number;
 }
 
-const withZero = (num: number): string => {
-  if (num >= 10) {
-    return `${num}`;
-  }
-
-  return `0${num}`;
-};
-
-const formatTime = (time: number): string => {
-  return `${withZero(Math.ceil(time / 60 / 60))}:${withZero(
-    Math.ceil(time / 60) % 60,
-  )}:${withZero(time % 60)}`;
-};
-
 const WorkoutItem = ({
   divider,
   title,
@@ -52,44 +36,34 @@ const WorkoutItem = ({
   length,
   ...props
 }: Props) => {
-  const navigation = useNavigation();
-
   return (
-    <TouchableWithoutFeedback
-      onPress={() => {
-        if (!editOpened) {
-          navigation.navigate('Creator', { id });
-        }
-      }}
-    >
-      <View>
-        <View style={styles.infoContainer}>
-          <Text style={styles.title}>{title}</Text>
-          {editOpened && (
-            <Animated.View
-              style={{
-                transform: [{ scale: transitionValue }],
-                opacity: transitionValue,
-              }}
-            >
-              <FontAwesome
-                name="trash"
-                style={styles.icon}
-                onPress={() => {
-                  if (length === 1) closeEdit();
+    <View>
+      <View style={styles.infoContainer}>
+        <Text style={styles.title}>{title}</Text>
+        {editOpened && (
+          <Animated.View
+            style={{
+              transform: [{ scale: transitionValue }],
+              opacity: transitionValue,
+            }}
+          >
+            <FontAwesome
+              name="trash"
+              style={styles.icon}
+              onPress={() => {
+                if (length === 1) closeEdit();
 
-                  props.deleteWorkout(id);
-                }}
-              />
-            </Animated.View>
-          )}
-          {type === 'intervals' && !editOpened && (
-            <Text style={styles.subText}>{timerToString(time)}</Text>
-          )}
-        </View>
-        {/* {divider && <Divider style={styles.divider} />} */}
+                props.deleteWorkout(id);
+              }}
+            />
+          </Animated.View>
+        )}
+        {type === 'intervals' && !editOpened && (
+          <Text style={styles.subText}>{timerToString(time)}</Text>
+        )}
       </View>
-    </TouchableWithoutFeedback>
+      {/* {divider && <Divider style={styles.divider} />} */}
+    </View>
   );
 };
 

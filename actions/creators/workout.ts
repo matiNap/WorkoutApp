@@ -69,32 +69,24 @@ export const createWorkoutTable = () => {
   });
 };
 
-export const saveNameWorkout = (id: string, name: string) => (
-  dispatch,
-) => {
-  getDatabase().transaction(
-    (tx) => {
-      tx.executeSql('update workouts set name = ? where id = ?', [
+export const saveNameWorkout = (id: string, name: string) => (dispatch) => {
+  getDatabase().transaction((tx) => {
+    tx.executeSql('update workouts set name = ? where id = ?', [name, id]);
+  });
+
+  dispatch({
+    type: types.UPDATE_WORKOUT,
+    payload: {
+      data: {
         name,
-        id,
-      ]);
+      },
+      id,
     },
-    () => {},
-    () => {
-      dispatch({
-        type: types.UPDATE_WORKOUT,
-        payload: {
-          data: {
-            name,
-          },
-          id,
-        },
-      });
-    },
-  );
+  });
 };
 
 export const saveExercises = (id: string, exercises: exercise[]) => {
+  reactotron.log(exercises);
   getDatabase().transaction((tx) => {
     tx.executeSql('update workouts set exercises = ? where id = ?', [
       JSON.stringify(exercises),
@@ -103,14 +95,9 @@ export const saveExercises = (id: string, exercises: exercise[]) => {
   });
 };
 
-export const saveTypeWorkout = (id: string, type: workoutType) => (
-  dispatch,
-) => {
+export const saveTypeWorkout = (id: string, type: workoutType) => (dispatch) => {
   getDatabase().transaction((tx) => {
-    tx.executeSql('update workouts set type = ? where id = ?;', [
-      type,
-      id,
-    ]);
+    tx.executeSql('update workouts set type = ? where id = ?;', [type, id]);
   });
   dispatch({
     type: types.UPDATE_WORKOUT,
@@ -123,15 +110,9 @@ export const saveTypeWorkout = (id: string, type: workoutType) => (
   });
 };
 
-export const saveLoop = (id: string, value: number) => (
-  dispatch,
-  getState,
-) => {
+export const saveLoop = (id: string, value: number) => (dispatch, getState) => {
   getDatabase().transaction((tx) => {
-    tx.executeSql('update workouts set loop = ? where id = ?', [
-      value,
-      id,
-    ]);
+    tx.executeSql('update workouts set loop = ? where id = ?', [value, id]);
   });
   dispatch({
     type: types.UPDATE_WORKOUT,
@@ -145,15 +126,9 @@ export const saveLoop = (id: string, value: number) => (
   updateTime(id)(dispatch, getState);
 };
 
-export const saveExerciseBreak = (id: string, breakValue: number) => (
-  dispatch,
-  getState,
-) => {
+export const saveExerciseBreak = (id: string, breakValue: number) => (dispatch, getState) => {
   getDatabase().transaction((tx) => {
-    tx.executeSql(
-      'update workouts set exerciseBreak = ? where id = ?',
-      [breakValue, id],
-    );
+    tx.executeSql('update workouts set exerciseBreak = ? where id = ?', [breakValue, id]);
   });
   dispatch({
     type: types.UPDATE_WORKOUT,
@@ -167,15 +142,9 @@ export const saveExerciseBreak = (id: string, breakValue: number) => (
   updateTime(id)(dispatch, getState);
 };
 
-export const saveTypeBreak = (id: string, breakValue: number) => (
-  dispatch,
-  getState,
-) => {
+export const saveTypeBreak = (id: string, breakValue: number) => (dispatch, getState) => {
   getDatabase().transaction((tx) => {
-    tx.executeSql('update workouts set typeBreak = ? where id = ?', [
-      breakValue,
-      id,
-    ]);
+    tx.executeSql('update workouts set typeBreak = ? where id = ?', [breakValue, id]);
   });
   dispatch({
     type: types.UPDATE_WORKOUT,
@@ -186,31 +155,20 @@ export const saveTypeBreak = (id: string, breakValue: number) => (
       id,
     },
   });
-  updateTime(workoutId)(dispatch, getState);
+  updateTime(id)(dispatch, getState);
 };
 
-const getExercises = (
-  getState: () => RootState,
-  workoutId: string,
-): exercise[] => {
+const getExercises = (getState: () => RootState, workoutId: string): exercise[] => {
   const { workouts } = getState();
-  return workouts[_.findIndex(workouts, ({ id }) => id === workoutId)]
-    .exercises;
+  return workouts[_.findIndex(workouts, ({ id }) => id === workoutId)].exercises;
 };
 
-const mergeExercises = (
-  getState: () => RootState,
-  exc: exercise,
-  workoutId: string,
-) => {
+const mergeExercises = (getState: () => RootState, exc: exercise, workoutId: string) => {
   const currentExercises = getExercises(getState, workoutId);
   return [...currentExercises, exc];
 };
 
-export const addExercise = (
-  workoutId: string,
-  exercise: exercise,
-) => (dispatch, getState) => {
+export const addExercise = (workoutId: string, exercise: exercise) => (dispatch, getState) => {
   const newExercises = mergeExercises(getState, exercise, workoutId);
 
   saveExercises(workoutId, newExercises);
@@ -226,11 +184,10 @@ export const addExercise = (
   updateTime(workoutId)(dispatch, getState);
 };
 
-export const editExercise = (
-  workoutId: string,
-  exerciseId: string,
-  excUpdate: exercise,
-) => (dispatch, getState: () => RootState) => {
+export const editExercise = (workoutId: string, exerciseId: string, excUpdate: exercise) => (
+  dispatch,
+  getState: () => RootState,
+) => {
   const currentExcs = getExercises(getState, workoutId);
 
   const updatedExc = currentExcs.map((item: exercise) => {
@@ -243,10 +200,7 @@ export const editExercise = (
 
     return item;
   });
-  saveExercises(
-    workoutId,
-    mergeExercises(getState, updatedExc, workoutId),
-  );
+  saveExercises(workoutId, updatedExc);
 
   dispatch({
     type: types.UPDATE_WORKOUT,
@@ -261,22 +215,17 @@ export const editExercise = (
   updateTime(workoutId)(dispatch, getState);
 };
 
-const updateTime = (workoutId: string) => (
-  dispatch,
-  getState: () => RootState,
-) => {
+const updateTime = (workoutId: string) => (dispatch, getState: () => RootState) => {
   let time = -1;
   const { workouts } = getState();
-  const currentWorkout: workout =
-    workouts[_.findIndex(workouts, ({ id }) => id === workoutId)];
+  const currentWorkout: workout = workouts[_.findIndex(workouts, ({ id }) => id === workoutId)];
   const { exercises } = currentWorkout;
-  reactotron.log(exercises);
+
   for (let i = 0; i < exercises.length; i++) {
     if (exercises[i].type === 'reps') {
       time = -1;
       break;
     } else {
-      reactotron.log(exercises[i].value);
       if (time === -1) time = 0;
       time += exercises[i].value;
     }
@@ -289,10 +238,7 @@ const updateTime = (workoutId: string) => (
     time += (l - 1) * loop * exerciseBreak + (loop - 1) * typeBreak;
   }
   getDatabase().transaction((tx) => {
-    tx.executeSql('update workouts set time = ? where id = ?;', [
-      time,
-      workoutId,
-    ]);
+    tx.executeSql('update workouts set time = ? where id = ?;', [time, workoutId]);
   });
   dispatch({
     type: types.UPDATE_WORKOUT,
@@ -305,10 +251,7 @@ const updateTime = (workoutId: string) => (
   });
 };
 
-export const deleteExercise = (
-  workoutId: string,
-  exerciseId: string,
-) => (dispatch, getState) => {
+export const deleteExercise = (workoutId: string, exerciseId: string) => (dispatch, getState) => {
   const excs = getExercises(getState, workoutId);
   _.remove(excs, (item) => {
     if (item.id === exerciseId) {

@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
-import { Text, Overlay } from 'react-native-elements';
-import palette from '_palette';
-import typography from '_typography';
-import metrics from '_metrics';
+import { View, StyleSheet } from 'react-native';
+import { Text } from 'react-native-elements';
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
-import Workouts from '_components/WorkoutsList';
+import Overlay from '_components/Overlay';
+import palette from '_palette';
+import metrics from '_metrics';
+import WorkoutsList from '_components/WorkoutsList';
 
-const Selector = () => {
+interface Props {
+  navigation: any;
+}
+
+const Selector = ({ navigation }: Props) => {
   const [opened, setOpened] = useState(false);
   return (
     <View style={styles.container}>
@@ -20,16 +24,20 @@ const Selector = () => {
           <Text style={styles.text}>START</Text>
         </View>
       </TouchableWithoutFeedback>
-      {opened && (
-        <Overlay
-          overlayStyle={styles.overlay}
-          onBackdropPress={() => {
-            setOpened(!opened);
+      <Overlay
+        {...{
+          opened,
+        }}
+        close={() => {
+          setOpened(false);
+        }}
+      >
+        <WorkoutsList
+          onPress={(workoutId) => {
+            navigation.navigate('Timer', { workoutId });
           }}
-        >
-          <Workouts />
-        </Overlay>
-      )}
+        />
+      </Overlay>
     </View>
   );
 };

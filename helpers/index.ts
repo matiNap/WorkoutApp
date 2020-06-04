@@ -14,6 +14,19 @@ export const toTimer = (
   };
 };
 
+export const toHoursTimer = (
+  time: number,
+): {
+  minutes: number;
+  seconds: number;
+  hours: number;
+} => {
+  return {
+    ...toTimer(time),
+    hours: Math.floor(time / 3600),
+  };
+};
+
 const timeWithZero = (num: number) => {
   if (num < 10) {
     return `0${num}`;
@@ -23,7 +36,17 @@ const timeWithZero = (num: number) => {
 };
 
 export const timerToString = (time: number) => {
-  const { minutes, seconds } = toTimer(time);
+  const { minutes, seconds, hours } = toHoursTimer(time);
 
-  return `${timeWithZero(minutes)}:${timeWithZero(seconds)}`;
+  if (hours && hours >= 1) {
+    return `${timeWithZero(hours)}:${timeWithZero(minutes)}:${timeWithZero(seconds)}`;
+  } else {
+    return `${timeWithZero(minutes)}:${timeWithZero(seconds)}`;
+  }
+};
+
+export const hourTimerToString = (time: number) => {
+  const { minutes, seconds, hours } = toHoursTimer(time);
+
+  return `${timeWithZero(hours)}:${timeWithZero(minutes)}:${timeWithZero(seconds)}`;
 };
