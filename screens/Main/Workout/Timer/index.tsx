@@ -7,7 +7,7 @@ import _ from 'lodash';
 import palette from '_palette';
 import ProgressBar from './components/ProgressBar';
 import TimerClock from './components/Timer';
-import { workout } from '_types';
+import { workout, exercise, todo, exerciseType, breakType } from '_types';
 import reactotron from 'reactotronConfig';
 import StateText from './components/StateText';
 import ArcProgress from './components/ArcProgress';
@@ -15,6 +15,8 @@ import Animated from 'react-native-reanimated';
 import metrics from '_metrics';
 import TodoList from './components/TodoList';
 import { Text } from 'react-native-elements';
+import RepsInfo from './components/RepsInfo';
+import { createExerciseTodoList } from '_helpers';
 
 interface Props {
   route: {
@@ -25,25 +27,36 @@ interface Props {
   workout: workout;
 }
 
-type timerType = 'break' | 'workout';
+interface State {
+  currentTime: number;
+  target: {
+    currentTodo: todo | null;
+    index: number;
+    treshold: number;
+    type: exerciseType | breakType;
+  };
+  currentLoop: number;
+  todoList: todo[];
+  ended: boolean;
+}
 
-class Timer extends React.Component<Props> {
-  state = {
+class Timer extends React.Component<Props, State> {
+  state: State = {
     currentTime: 0,
     target: {
-      type: '',
-      name: '',
+      currentTodo: {},
       index: 0,
       treshold: 1,
-      isNextLoop: false,
-      time: 1,
+      type: 'reps',
     },
     currentLoop: 1,
+    todoList: [],
+    ended: false,
   };
   timer: NodeJS.Timeout;
 
   componentDidMount() {
-    const { type, time, exercises } = this.props.workout;
+    const { type, time, exercises, loop, exerciseBreak, typeBreak } = this.props.workout;
 
     this.timer = setInterval(() => {
       const { currentTime } = this.state;
@@ -52,55 +65,47 @@ class Timer extends React.Component<Props> {
       if (type === 'intervals' && time === currentTime) clearInterval(this.timer);
     }, 1000);
 
-    const firstExercise = exercises[0] ? exercises[0] : {};
+    const todoList = createExerciseTodoList(type, exercises, loop, exerciseBreak, typeBreak);
 
-    this.setState({
-      target: {
-        type: 'workout',
-        treshold: parseInt(firstExercise.value),
-        index: 0,
-        name: firstExercise.name,
-        time: firstExercise.value,
-      },
-    });
+    if (todoList.length !== 0) {
+      this.setState((prevState) => {
+        return {
+          target: { ...prevState.target, currentTodo: todoList[0], treshold: todoList[0].value },
+          todoList,
+        };
+      });
+    }
   }
+
+  updateTarget = () => {
+    this.setState((prevState) => {
+      const { todoList, target } = prevState;
+      const { index } = target;
+
+      if (index + 1 <= todoList.length - 1) {
+        const nextTodo = todoList[index + 1];
+        return {
+          target: {
+            currentTodo: nextTodo,
+            index: index + 1,
+            type: nextTodo.type,
+            treshold: target.treshold + nextTodo.value,
+          },
+          currentLoop:
+            nextTodo.type === 'typeBreak' ? prevState.currentLoop + 1 : prevState.currentLoop,
+        };
+      } else {
+        return {
+          ended: true,
+        };
+      }
+    });
+  };
 
   updateTimer() {
     this.setState((prevState) => {
-      const { exercises, loop } = this.props.workout;
-      const l = exercises.length;
-      const { target, currentTime, currentLoop } = prevState;
-      const { treshold, time } = target;
-
-      if (currentTime === treshold && currentLoop <= loop) {
-        const { typeBreak, exerciseBreak } = this.props.workout;
-        const isNextLoop = l - 1 === target.index;
-        const nextLoop = isNextLoop ? currentLoop + 1 : currentLoop;
-        const tresholdOffset = isNextLoop ? typeBreak : exerciseBreak;
-
-        const nextTarget =
-          target.type === 'workout'
-            ? {
-                type: 'break',
-                treshold: treshold + tresholdOffset,
-                index: isNextLoop ? -1 : target.index,
-                isNextLoop,
-                time: tresholdOffset,
-              }
-            : {
-                type: 'workout',
-                treshold: treshold + parseInt(exercises[target.index + 1].value),
-                index: target.index + 1,
-                name: exercises[target.index + 1].name,
-                time: parseInt(exercises[target.index + 1].value),
-              };
-
-        return {
-          currentTime: prevState.currentTime + 1,
-          target: nextTarget,
-          currentLoop: nextLoop,
-        };
-      }
+      const { target, currentTime } = prevState;
+      if (target.treshold === currentTime) this.updateTarget();
       return {
         currentTime: prevState.currentTime + 1,
       };
@@ -111,11 +116,11 @@ class Timer extends React.Component<Props> {
     clearInterval(this.timer);
   }
   render() {
-    const { currentTime, target, currentLoop } = this.state;
-    const { type: targetType, name, isNextLoop, treshold, time: targetTime } = target;
+    const { currentTime, target, currentLoop, todoList } = this.state;
+    const { type: targetType, currentTodo, treshold } = target;
     const { workout } = this.props;
-    const { type: workoutType, time, exercises, loop } = workout;
-
+    const { type: workoutType, time, loop } = workout;
+    reactotron.log(this.state.target);
     return (
       <View style={styles.container}>
         <Header {...{ workout }} />
@@ -125,19 +130,32 @@ class Timer extends React.Component<Props> {
           <TimerClock size={30} style={styles.progressTimer} time={currentTime} />
         )}
         <View style={styles.currentTime}>
-          <TimerClock size={40} style={styles.progressTimer} time={treshold - currentTime} />
+          {targetType !== 'reps' ? (
+            <TimerClock size={40} style={styles.progressTimer} time={treshold - currentTime} />
+          ) : (
+            <RepsInfo value={currentTodo.value} onNext={() => {}} />
+          )}
         </View>
         <View style={styles.info}>
-          <StateText type={targetType} {...{ workoutType, name, isNextLoop }} />
+          <StateText
+            type={targetType}
+            {...{ workoutType }}
+            name={currentTodo.name}
+            isNextLoop={targetType === 'typeBreak'}
+          />
           <Text style={styles.subText}>{`${
             workoutType === 'intervals' ? 'Interval' : 'Series'
           } ${currentLoop}/${loop}`}</Text>
         </View>
 
-        <View style={styles.arcProgress}>
-          <ArcProgress progress={new Animated.Value(-((treshold - currentTime) / targetTime))} />
-        </View>
-        <TodoList exercises={exercises} currentIndex={target.index} />
+        {targetType !== 'reps' && (
+          <View style={styles.arcProgress}>
+            <ArcProgress
+              progress={new Animated.Value(-((treshold - currentTime) / currentTodo.value))}
+            />
+          </View>
+        )}
+        <TodoList exercises={todoList} currentIndex={target.index} currentIndex={target.index} />
       </View>
     );
   }

@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-elements';
-import { exercise } from '_types';
+import { todo } from '_types';
 import Animated, {
   useCode,
   debug,
@@ -21,9 +21,10 @@ import { timerToString } from '_helpers';
 import { LinearGradient } from 'expo-linear-gradient';
 import { PanGestureHandler, ScrollView, State } from 'react-native-gesture-handler';
 import { onGestureEvent, timing } from 'react-native-redash';
+import typography from '_typography';
 
 interface Props {
-  exercises: exercise[];
+  exercises: todo[];
   currentIndex: number;
 }
 
@@ -45,6 +46,7 @@ const TodoList = ({ exercises, currentIndex }: Props) => {
       inputRange: [offsetTarget, 0],
       outputRange: [metrics.height, LINEAR_MIN_HEIGHT],
     });
+
     return {
       offsetY,
       gestureHandler: onGestureEvent({ translationY: translateY, state }),
@@ -53,7 +55,6 @@ const TodoList = ({ exercises, currentIndex }: Props) => {
       linearHeight,
     };
   }, []);
-
   useCode(
     () => [
       cond(eq(state, State.END), [
@@ -122,27 +123,40 @@ const TodoList = ({ exercises, currentIndex }: Props) => {
         <Animated.View style={[styles.container, { height, transform: [{ translateY: offsetY }] }]}>
           <Animated.View style={[styles.header]}>
             <View style={styles.swipeBar}></View>
-            <View style={styles.headerText}>
-              <Text>Next:</Text>
-              {currentIndex + 1 === exercises.length ? (
-                <Text>{exercises[0].name}</Text>
-              ) : (
-                <Text>{exercises[currentIndex + 1].name}</Text>
-              )}
-            </View>
+            {exercises.length !== 0 && (
+              <View style={styles.headerText}>
+                <Text>Next:</Text>
+                {currentIndex + 1 === exercises.length ? (
+                  <Text>{exercises[0].name}</Text>
+                ) : (
+                  <Text>{exercises[currentIndex + 1].name}</Text>
+                )}
+              </View>
+            )}
           </Animated.View>
 
           <ScrollView style={styles.listContainer}>
-            {exercises.map((exercise) => (
-              <View style={styles.itemContainer}>
-                <Text>{exercise.name}</Text>
-                {exercise.type === 'reps' ? (
-                  <Text style={styles.subText}>x{exercise.value}</Text>
-                ) : (
-                  <Text style={styles.subText}>{timerToString(exercise.value)}</Text>
-                )}
-              </View>
-            ))}
+            {exercises.map((exercise, index) => {
+              const currentStyle = currentIndex === index ? styles.currentText : styles.otherText;
+              if (exercise.type === 'break' || exercise.type === 'typeBreak')
+                return (
+                  <Text style={[styles.breakText, currentStyle]}>{`Break ${timerToString(
+                    exercise.value,
+                  )}`}</Text>
+                );
+              return (
+                <View style={styles.itemContainer}>
+                  <Text style={currentStyle}>{exercise.name}</Text>
+                  {exercise.type === 'reps' ? (
+                    <Text style={[styles.subText, currentStyle]}>x{exercise.value}</Text>
+                  ) : (
+                    <Text style={[styles.subText, currentStyle]}>
+                      {timerToString(exercise.value)}
+                    </Text>
+                  )}
+                </View>
+              );
+            })}
           </ScrollView>
         </Animated.View>
       </PanGestureHandler>
@@ -197,4 +211,11 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     height: 5,
   },
+  breakText: {
+    color: palette.text.gray,
+    fontSize: 14,
+    alignSelf: 'center',
+  },
+  currentText: { color: palette.primary, fontFamily: typography.fonts.primary },
+  otherText: { fontFamily: typography.fonts.primary },
 });

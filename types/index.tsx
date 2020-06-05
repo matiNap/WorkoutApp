@@ -20,3 +20,9 @@ export interface workout {
   loop: number;
   time: number;
 }
+
+export type breakType = 'break' | 'typeBreak';
+
+export type breakTodo = { type: breakType; value: number };
+
+export type todo = exercise | breakTodo;
