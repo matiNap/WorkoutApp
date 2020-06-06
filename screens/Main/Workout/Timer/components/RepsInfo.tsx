@@ -26,18 +26,18 @@ export default RepsInfo;
 
 const styles = StyleSheet.create({
   text: {
-    fontSize: 40,
+    fontSize: 50,
     alignSelf: 'center',
     padding: 5,
   },
   doneText: {
-    fontSize: 22,
+    fontSize: 25,
   },
   button: {
     backgroundColor: palette.actions.succes,
     borderRadius: 10,
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: 20,
     alignSelf: 'center',
     paddingVertical: 8,
     paddingHorizontal: 12,

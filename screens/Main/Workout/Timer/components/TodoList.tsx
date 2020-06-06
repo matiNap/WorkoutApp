@@ -4,8 +4,6 @@ import { Text } from 'react-native-elements';
 import { todo } from '_types';
 import Animated, {
   useCode,
-  debug,
-  block,
   interpolate,
   Extrapolate,
   cond,
@@ -28,6 +26,19 @@ interface Props {
   currentIndex: number;
 }
 
+const renderNextState = (exercises: todo[], currentIndex: number, nextEnded: boolean) => {
+  if (nextEnded) {
+    return <Text style={styles.stateEnded}>END</Text>;
+  }
+  if (currentIndex + 1 === exercises.length) return <Text>{exercises[0].name}</Text>;
+  else if (
+    exercises[currentIndex + 1].type === 'break' ||
+    exercises[currentIndex + 1].type === 'typeBreak'
+  )
+    return <Text>Break</Text>;
+  else return <Text>{exercises[currentIndex + 1].name}</Text>;
+};
+
 const ALinearGradient = Animated.createAnimatedComponent(LinearGradient);
 
 const ITEM_HEIGHT = metrics.height * 0.05;
@@ -37,7 +48,7 @@ const TodoList = ({ exercises, currentIndex }: Props) => {
   const height = metrics.height * 0.7;
   const offsetTarget = -height + HEADER_HEIGHT;
   const LINEAR_MIN_HEIGHT = metrics.height * 0.15;
-
+  const nextEnded = exercises.length - 1 === currentIndex;
   const { offsetY, gestureHandler, translateY, state, linearHeight } = useMemo(() => {
     const offsetY = new Animated.Value(0);
     const translateY = new Animated.Value(0);
@@ -126,11 +137,7 @@ const TodoList = ({ exercises, currentIndex }: Props) => {
             {exercises.length !== 0 && (
               <View style={styles.headerText}>
                 <Text>Next:</Text>
-                {currentIndex + 1 === exercises.length ? (
-                  <Text>{exercises[0].name}</Text>
-                ) : (
-                  <Text>{exercises[currentIndex + 1].name}</Text>
-                )}
+                {renderNextState(exercises, currentIndex, nextEnded)}
               </View>
             )}
           </Animated.View>
@@ -218,4 +225,7 @@ const styles = StyleSheet.create({
   },
   currentText: { color: palette.primary, fontFamily: typography.fonts.primary },
   otherText: { fontFamily: typography.fonts.primary },
+  stateEnded: {
+    color: palette.primary,
+  },
 });

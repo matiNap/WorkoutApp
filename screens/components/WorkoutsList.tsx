@@ -24,6 +24,7 @@ const WorkoutsList = ({ setEditOpened, editOpened, transitionValue, workouts, on
         {workouts &&
           workouts.map((workout) => (
             <TouchableWithoutFeedback
+              key={workout.id}
               onPress={() => {
                 if (onPress && !editOpened) onPress(workout.id);
               }}

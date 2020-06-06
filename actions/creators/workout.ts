@@ -230,11 +230,11 @@ const updateTime = (workoutId: string) => (dispatch, getState: () => RootState) 
       time += exercises[i].value;
     }
   }
-
+  console.log(time);
   if (time !== -1) {
     const { loop, exerciseBreak, typeBreak } = currentWorkout;
+    time *= loop;
     const l = exercises.length;
-
     time += (l - 1) * loop * exerciseBreak + (loop - 1) * typeBreak;
   }
   getDatabase().transaction((tx) => {
