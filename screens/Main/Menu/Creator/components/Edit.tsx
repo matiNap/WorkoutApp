@@ -5,10 +5,7 @@ import TimeSelector from '_components/TimeSelector';
 import Overlay from '_components/Overlay';
 import ExitButtons from '_components/ExitButtons';
 import Switch from '_components/Switch';
-import {
-  TouchableWithoutFeedback,
-  TextInput,
-} from 'react-native-gesture-handler';
+import { TouchableWithoutFeedback, TextInput } from 'react-native-gesture-handler';
 import typography from '_typography';
 import palette from '_palette';
 import stylesheet from '_stylesheet';
@@ -44,14 +41,10 @@ const Edit = ({
   title,
   ...props
 }: Props) => {
-  const { type, name, value } = exercise
-    ? exercise
-    : { type: null, name: null, value: null };
+  const { type, name, value } = exercise ? exercise : { type: null, name: null, value: null };
   const [openedTimeSelector, setOpenedTimeSelector] = useState(false);
   const [localType, setLocalType] = useState('reps');
-  const [localName, setLocalName] = useState(
-    add ? 'Enter name' : name,
-  );
+  const [localName, setLocalName] = useState(add ? 'Enter name' : name);
   const [localValue, setLocalValue] = useState(0);
   const excType = add ? localType : type;
   const excValue = add ? localValue : value;
@@ -133,8 +126,7 @@ const Edit = ({
               <Text>Type:</Text>
               <Switch
                 onChange={(newValue) => {
-                  const newType =
-                    newValue === 'Reps' ? 'reps' : 'time';
+                  const newType = newValue === 'Reps' ? 'reps' : 'time';
                   if (add) {
                     setLocalType(newType);
                   } else {
@@ -156,9 +148,7 @@ const Edit = ({
                 }}
               >
                 <Text style={stylesheet.subText}>
-                  {excType === 'reps'
-                    ? excValue
-                    : timerToString(excValue)}
+                  {excType === 'reps' ? excValue : timerToString(excValue)}
                 </Text>
               </TouchableWithoutFeedback>
             </View>
@@ -195,14 +185,10 @@ const mapStateToProps = (state: RootState, ownProps: Props) => {
   const { add, workout_id, exercise_id } = ownProps;
   if (!add && exercise_id) {
     const { exercises } = state.workouts[
-      _.findIndex(
-        state.workouts,
-        ({ id: currentId }) => currentId === workout_id,
-      )
+      _.findIndex(state.workouts, ({ id: currentId }) => currentId === workout_id)
     ];
 
-    const exercise =
-      exercises[_.findIndex(exercises, { id: exercise_id })];
+    const exercise = exercises[_.findIndex(exercises, { id: exercise_id })];
 
     return {
       exercise,

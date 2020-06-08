@@ -1,10 +1,7 @@
 import React, { useState } from 'react';
 import { Text } from 'react-native-elements';
 import { StyleSheet, View } from 'react-native';
-import Animated, {
-  Easing,
-  interpolate,
-} from 'react-native-reanimated';
+import Animated, { Easing, interpolate } from 'react-native-reanimated';
 import { useTransition } from 'react-native-redash';
 import metrics from '_metrics';
 import TimeSelector from '_components/TimeSelector';
@@ -68,9 +65,7 @@ const Settings = ({
   const [openedExcTimer, setOpenedExcTimer] = useState(false);
   const [openedTypeTimer, setOpenedTypeTimer] = useState(false);
   const [openedLoopValue, setOpenedLoopValue] = useState(false);
-  const [localType, setType] = useState(
-    type === 'intervals' ? 'Interv' : 'Series',
-  );
+  const [localType, setType] = useState(type === 'intervals' ? 'Interv' : 'Series');
   const loopTitle = type === 'intervals' ? 'Intervals' : 'Series';
   return (
     <Animated.View
@@ -104,10 +99,7 @@ const Settings = ({
                 } else {
                   setType('Series');
                 }
-                props.saveTypeWorkout(
-                  id,
-                  newValue === 'Interv' ? 'intervals' : 'series',
-                );
+                props.saveTypeWorkout(id, newValue === 'Interv' ? 'intervals' : 'series');
               }}
               initValue={type === 'intervals'}
             />
@@ -121,9 +113,7 @@ const Settings = ({
             <View style={styles.setting}>
               <Text>Excerciese break</Text>
 
-              <Text style={styles.time}>
-                {timerToString(exerciseBreak)}
-              </Text>
+              <Text style={styles.time}>{timerToString(exerciseBreak)}</Text>
             </View>
           </TouchableWithoutFeedback>
           <TouchableWithoutFeedback
@@ -134,9 +124,7 @@ const Settings = ({
             <View style={styles.setting}>
               <Text>{`${localType} break`}</Text>
 
-              <Text style={styles.time}>
-                {timerToString(typeBreak)}
-              </Text>
+              <Text style={styles.time}>{timerToString(typeBreak)}</Text>
             </View>
           </TouchableWithoutFeedback>
           <TouchableWithoutFeedback
@@ -156,10 +144,7 @@ const Settings = ({
           <TimeSelector
             title={'Excercise break:'}
             onConfirm={(minutes, seconds) => {
-              props.saveExerciseBreak(
-                id,
-                fromTimer(minutes, seconds),
-              );
+              props.saveExerciseBreak(id, fromTimer(minutes, seconds));
             }}
             setOpened={setOpenedExcTimer}
             opened={openedExcTimer}
@@ -180,7 +165,7 @@ const Settings = ({
             title={loopTitle}
             setOpened={setOpenedLoopValue}
             onConfirm={(value) => {
-              props.saveLoop(id, value);
+              props.saveLoop(id, value + 1);
             }}
             opened={openedLoopValue}
           />

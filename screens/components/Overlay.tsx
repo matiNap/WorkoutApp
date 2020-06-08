@@ -18,13 +18,7 @@ interface Props {
 
 const { useCode, cond, call, greaterOrEq } = Animated;
 
-const Overlay = ({
-  style,
-  opened,
-  children,
-  absoluteComponent,
-  close,
-}: Props) => {
+const Overlay = ({ style, opened, children, absoluteComponent, close }: Props) => {
   BackHandler.addEventListener('hardwareBackPress', () => {
     if (opened) {
       close();
@@ -39,11 +33,8 @@ const Overlay = ({
 
   return (
     <Animated.View
-      style={[
-        StyleSheet.absoluteFill,
-        styles.background,
-        { opacity: transitionValue },
-      ]}
+      style={[StyleSheet.absoluteFill, styles.background, { opacity: transitionValue }]}
+      pointerEvents="box-none"
     >
       <Animated.View
         style={[
