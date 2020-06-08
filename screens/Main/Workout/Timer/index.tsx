@@ -23,6 +23,7 @@ import Overlay from '_components/Overlay';
 import ExitButtons from '_components/ExitButtons';
 import typography from '_typography';
 import StartScreen from './components/StartScreen';
+import { Audio } from 'expo-av';
 
 interface Props {
   route: {
@@ -50,6 +51,8 @@ interface State {
   start: boolean;
 }
 
+const AUDIO_PATH = '../../../../assets/audio';
+
 class Timer extends React.Component<Props, State> {
   state: State = {
     currentTime: 0,
@@ -68,8 +71,9 @@ class Timer extends React.Component<Props, State> {
   };
   timer: NodeJS.Timeout;
   currentTimer: NodeJS.Timeout;
+  alarm = new Audio.Sound();
 
-  componentDidMount() {
+  async componentDidMount() {
     const { type, exercises, loop, exerciseBreak, typeBreak } = this.props.workout;
 
     const todoList = createExerciseTodoList(type, exercises, loop, exerciseBreak, typeBreak);
@@ -87,15 +91,24 @@ class Timer extends React.Component<Props, State> {
         };
       });
     }
+
+    try {
+      await this.alarm.loadAsync(require(`${AUDIO_PATH}/beep.mp3`));
+      await this.alarm.setVolumeAsync(0.1);
+    } catch (error) {
+      console.log(error.message);
+    }
   }
 
-  componentDidUpdate(_, prevState) {
+  componentDidUpdate(_, prevState: State) {
     const { type, time } = this.props.workout;
     if (prevState.start !== this.state.start) {
-      this.timer = setInterval(() => {
+      this.timer = setInterval(async () => {
         const { currentTime, stopped, ended, exitOpened } = this.state;
 
-        if (!stopped && !ended && !exitOpened) this.updateTimer();
+        if (!stopped && !ended && !exitOpened) {
+          this.updateTimer();
+        }
         if (type === 'intervals' && time === currentTime + 1) {
           this.setState({ ended: true });
           clearInterval(this.timer);
@@ -134,11 +147,21 @@ class Timer extends React.Component<Props, State> {
     });
   };
 
+  async playAlarm() {
+    try {
+      await this.alarm.replayAsync();
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
+
   updateTimer() {
     this.setState((prevState) => {
       const { target, currentTime } = prevState;
-      if (prevState.currentWorkoutTime === target.currentTodo?.value && target.type !== 'reps')
+      if (prevState.currentWorkoutTime === target.currentTodo?.value && target.type !== 'reps') {
+        this.playAlarm();
         this.updateTarget();
+      }
       const currentWorkoutTime =
         prevState.currentWorkoutTime === target.currentTodo?.value || target.type === 'reps'
           ? 0
