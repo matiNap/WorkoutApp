@@ -10,7 +10,7 @@ interface Props {
 
 const AddButton = ({ onPress }: Props) => {
   return (
-    <TouchableWithoutFeedback {...{ onPress }}>
+    <TouchableWithoutFeedback {...{ onPress }} style={styles.container}>
       <MaterialIcons name="add" style={styles.icon} />
     </TouchableWithoutFeedback>
   );
@@ -24,5 +24,11 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     color: palette.text.primary,
     alignSelf: 'center',
+  },
+  container: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
 });

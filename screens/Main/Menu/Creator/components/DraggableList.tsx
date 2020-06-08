@@ -33,7 +33,7 @@ class DraggableList extends React.Component<Props> {
 
     return (
       <View style={{ flex: 1 }}>
-        <Animated.ScrollView contentContainerStyle={{ flex: 1 }}>
+        <Animated.ScrollView contentContainerStyle={styles.listContainer}>
           {data.map((item, index) => (
             <ExcItem
               onPress={() => {
@@ -49,12 +49,6 @@ class DraggableList extends React.Component<Props> {
               id={item.id}
             />
           ))}
-          {addButton &&
-            addButton({
-              addValue: () => {
-                this.values.push(new Animated.Value(0));
-              },
-            })}
         </Animated.ScrollView>
 
         <Edit
@@ -64,6 +58,12 @@ class DraggableList extends React.Component<Props> {
           exercise_id={selected}
           {...{ workout_id: id }}
         />
+        {addButton &&
+          addButton({
+            addValue: () => {
+              this.values.push(new Animated.Value(0));
+            },
+          })}
       </View>
     );
   }
@@ -71,4 +71,8 @@ class DraggableList extends React.Component<Props> {
 
 export default DraggableList;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  listContainer: {
+    flex: 1,
+  },
+});

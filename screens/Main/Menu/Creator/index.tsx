@@ -1,10 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, BackHandler } from 'react-native';
 import palette from '_palette';
-import {
-  TouchableWithoutFeedback,
-  TextInput,
-} from 'react-native-gesture-handler';
+import { TouchableWithoutFeedback, TextInput } from 'react-native-gesture-handler';
 import { MaterialIcons, AntDesign } from '@expo/vector-icons';
 
 import AddButton from './components/AddButton';
@@ -18,10 +15,7 @@ import DraggableList from './components/DraggableList';
 import { useSelector, connect } from 'react-redux';
 import { RootState } from '_rootReducer';
 import { workout, exercise } from '_types';
-import {
-  saveNameWorkout,
-  addExercise,
-} from '_actions/creators/workout';
+import { saveNameWorkout, addExercise } from '_actions/creators/workout';
 
 import _ from 'lodash';
 import reactotron from 'reactotronConfig';
@@ -40,16 +34,7 @@ interface Props {
 }
 
 const Creator = ({ workout, ...props }: Props) => {
-  const {
-    type,
-    exerciseBreak,
-    typeBreak,
-    name: workoutTitle,
-    exercises,
-    id,
-    time,
-    loop,
-  } = workout;
+  const { type, exerciseBreak, typeBreak, name: workoutTitle, exercises, id, time, loop } = workout;
   const [name, setName] = useState(workoutTitle);
   const [settingsOpened, setSettingsOpened] = useState(false);
   const [addOpened, setAddOpened] = useState(false);
@@ -98,10 +83,7 @@ const Creator = ({ workout, ...props }: Props) => {
               setSettingsOpened(!settingsOpened);
             }}
           >
-            <MaterialIcons
-              name="settings"
-              style={styles.headerIcon}
-            />
+            <MaterialIcons name="settings" style={styles.headerIcon} />
           </TouchableWithoutFeedback>
         </View>
       </Header>
@@ -143,19 +125,14 @@ const mapStateToProps = (state: RootState, ownProps: Props) => {
     const workout = workouts[workouts.length - 1];
 
     return {
-      workout: workout
-        ? workout
-        : { type: null, exercises: [], name: 'Workout name' },
+      workout: workout ? workout : { type: null, exercises: [], name: 'Workout name' },
     };
   }
 
   const { id } = ownProps.route.params;
 
   return {
-    workout:
-      state.workouts[
-        _.findIndex(workouts, ({ id: currentId }) => currentId === id)
-      ],
+    workout: state.workouts[_.findIndex(workouts, ({ id: currentId }) => currentId === id)],
   };
 };
 
