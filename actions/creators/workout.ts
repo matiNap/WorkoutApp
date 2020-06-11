@@ -169,7 +169,7 @@ const mergeExercises = (getState: () => RootState, exc: exercise, workoutId: str
 };
 
 export const addExercise = (workoutId: string, exercise: exercise) => (dispatch, getState) => {
-  const newExercises = mergeExercises(getState, exercise, workoutId);
+  const newExercises = mergeExercises(getState, { ...exercise, id: uid() }, workoutId);
 
   saveExercises(workoutId, newExercises);
   dispatch({

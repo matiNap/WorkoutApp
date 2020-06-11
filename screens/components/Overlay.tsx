@@ -1,10 +1,9 @@
 import React, { ReactNode, CSSProperties, useState } from 'react';
-import { StyleSheet, BackHandler } from 'react-native';
+import { StyleSheet, BackHandler, View } from 'react-native';
 import metrics from '_metrics';
-import { useTransition } from 'react-native-redash';
-import Animated, { Easing } from 'react-native-reanimated';
+import { useSpringTransition } from 'react-native-redash';
+import Animated, { Easing, interpolate } from 'react-native-reanimated';
 import palette from '_palette';
-import { approximates } from 'react-native-redash';
 
 interface Props {
   width?: number;
@@ -12,52 +11,109 @@ interface Props {
   opened: boolean;
   children: ReactNode;
   style?: CSSProperties;
-  absoluteComponent?: () => ReactNode;
   close: () => void;
+  x: number;
+  y: number;
 }
+
+const WIDTH = metrics.width * 0.8;
+const HEIGHT = metrics.height * 0.4;
 
 const { useCode, cond, call, greaterOrEq } = Animated;
 
-const Overlay = ({ style, opened, children, absoluteComponent, close }: Props) => {
+const Overlay = ({
+  style,
+  opened,
+  children,
+  close,
+  x,
+  y,
+  height: destHeight = HEIGHT,
+  width: destWidth = WIDTH,
+}: Props) => {
   BackHandler.addEventListener('hardwareBackPress', () => {
     if (opened) {
       close();
       return true;
     }
   });
-  const transitionValue = useTransition(opened, {
-    duration: 150,
-    easing: Easing.inOut(Easing.exp),
+
+  const [top, setTop] = useState(0);
+  const [left, setLeft] = useState(0);
+  const [width, setWidth] = useState(0);
+  const [height, setHeight] = useState(0);
+
+  const transitionValue = useSpringTransition(opened, {});
+  const posY = interpolate(transitionValue, {
+    inputRange: [0, 1],
+    outputRange: [y, metrics.height / 2 - height / 2],
   });
-  const [toRender, setToRender] = useState(opened);
+  const posX = interpolate(transitionValue, {
+    inputRange: [0, 1],
+    outputRange: [x, metrics.width / 2 - width / 2],
+  });
+  const opacity = interpolate(transitionValue, {
+    inputRange: [0, 0.1, 1],
+    outputRange: [0, 1, 1],
+  });
 
   return (
-    <Animated.View
-      style={[StyleSheet.absoluteFill, styles.background, { opacity: transitionValue }]}
-      pointerEvents="box-none"
+    <View
+      style={styles.main}
+      ref={(ref) => {
+        ref?.measure((fx, fy, width, height, px, py) => {
+          setLeft(px);
+          setTop(py);
+        });
+      }}
     >
       <Animated.View
         style={[
-          styles.container,
           {
-            ...style,
-            transform: [{ scale: transitionValue }],
+            top: -top,
+            left: -left,
+            opacity: opacity,
           },
+          styles.background,
         ]}
+        // pointerEvents="box-none"
       >
-        {children}
+        <Animated.View
+          style={[
+            styles.container,
+            {
+              width: destWidth,
+              height: destHeight,
+              opacity: transitionValue,
+              ...style,
+              top: posY,
+              left: posX,
+            },
+          ]}
+          onLayout={({ nativeEvent }) => {
+            const { width, height } = nativeEvent.layout;
+            setWidth(width);
+            setHeight(height);
+          }}
+        >
+          {opened ? children : null}
+        </Animated.View>
       </Animated.View>
-      {absoluteComponent && absoluteComponent()}
-    </Animated.View>
+    </View>
   );
 };
 
 export default Overlay;
 
 const styles = StyleSheet.create({
+  main: {
+    flex: 1,
+    position: 'absolute',
+    zIndex: 230,
+  },
   container: {
-    width: metrics.width * 0.8,
-    height: metrics.height * 0.4,
+    width: WIDTH,
+    height: HEIGHT,
     position: 'absolute',
     alignSelf: 'center',
     borderRadius: 20,
@@ -70,5 +126,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)',
     zIndex: 160,
     justifyContent: 'center',
+    width: metrics.width,
+    height: metrics.height,
   },
 });

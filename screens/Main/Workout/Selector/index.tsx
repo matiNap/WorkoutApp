@@ -24,7 +24,7 @@ const Selector = ({ navigation }: Props) => {
           <Text style={styles.text}>START</Text>
         </View>
       </TouchableWithoutFeedback>
-      <Overlay
+      {/* <Overlay
         {...{
           opened,
         }}
@@ -37,7 +37,7 @@ const Selector = ({ navigation }: Props) => {
             navigation.navigate('Timer', { workoutId });
           }}
         />
-      </Overlay>
+      </Overlay> */}
     </View>
   );
 };

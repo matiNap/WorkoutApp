@@ -1,16 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { exerciseType } from '_types';
 import { Text } from 'react-native-elements';
-import { MaterialIcons, AntDesign } from '@expo/vector-icons';
 import palette from '_palette';
 import metrics from '_metrics';
-import Animated, { useCode, Easing } from 'react-native-reanimated';
+import Animated, { useCode, Easing, SpringUtils, interpolate } from 'react-native-reanimated';
 import { PanGestureHandler, State, TouchableWithoutFeedback } from 'react-native-gesture-handler';
-import { onGestureEvent, timing, approximates } from 'react-native-redash';
+import { onGestureEvent, timing, approximates, useSpringTransition } from 'react-native-redash';
 import { timerToString } from '_helpers';
 import { connect } from 'react-redux';
 import { deleteExercise } from '_actions/creators/workout';
+import Switch from '_components/Switch';
+import typography from '_typography';
+import { editExercise } from '_actions/creators/workout';
+import reactotron from 'reactotron-react-native';
 
 const { cond, set, add, eq, floor, multiply, divide } = Animated;
 
@@ -25,10 +28,15 @@ interface Props {
   onPress: () => void;
   workout_id: string;
   deleteExercise: typeof deleteExercise;
+  editExercise: typeof editExercise;
   id: string;
+  setPosition: (position: { x: number; y: number }, index: number) => void;
+  swtichExpanded: () => void;
 }
 
-const ITEM_HEIGHT = metrics.height * 0.12;
+const ITEM_HEIGHT = metrics.height * 0.2;
+const ITEM_WIDTH = metrics.width * 0.95;
+const BORDER_RADIUS = ITEM_HEIGHT * 0.2;
 
 const ExcItem = ({
   title,
@@ -84,42 +92,106 @@ const ExcItem = ({
     [],
   );
 
+  const [expaneded, setExpanded] = useState(false);
+
+  const [containerY, setContainerY] = useState(0);
+  const testTransition = useSpringTransition(expaneded, SpringUtils.makeDefaultConfig());
+  const expandHeight = interpolate(testTransition, {
+    inputRange: [0, 1],
+    outputRange: [ITEM_HEIGHT, metrics.height],
+  });
+  const translateContainerY = interpolate(testTransition, {
+    inputRange: [0, 1],
+    outputRange: [0, -containerY],
+  });
+
   return (
-    <TouchableWithoutFeedback {...{ onPress }} style={{ backgroundColor: 'rgba(0,0,0,0)' }}>
-      <Animated.View style={[styles.container, { translateY }]}>
-        <View style={styles.header}>
-          <Text style={styles.text}>{title}</Text>
-          <AntDesign name="edit" style={styles.editIcon} />
+    <View
+      style={styles.mainContainer}
+      ref={(ref) => {
+        //Set x and y for expand transition
+        ref?.measure((fx, fy, width, height, px, py) => {
+          setContainerY(py);
+        });
+      }}
+    >
+      <Animated.View
+        style={[
+          styles.container,
+          {
+            height: expandHeight,
+            transform: [{ translateY: translateContainerY }],
+          },
+        ]}
+      >
+        <View
+          style={styles.header}
+          ref={(ref) => {
+            //Set x and y for edit overlay transition
+            ref?.measure((fx, fy, width, height, px, py) => {
+              props.setPosition({ x: px, y: py }, index);
+            });
+          }}
+        >
+          <TouchableWithoutFeedback onPress={onPress}>
+            <Text style={[styles.text]}>{title}</Text>
+          </TouchableWithoutFeedback>
+          <Switch
+            initValue={type === 'time'}
+            left="Reps"
+            right="Time"
+            onChange={(newValue) => {
+              const type = newValue === 'Reps' ? 'reps' : 'time';
+              props.editExercise(workout_id, id, {
+                type,
+              });
+            }}
+          />
         </View>
+
         <View style={styles.content}>
-          {type === 'reps' ? (
-            <Text style={styles.subText}>{`x${value}`}</Text>
-          ) : (
-            <Text style={styles.subText}>{timerToString(value)}</Text>
-          )}
+          <TouchableWithoutFeedback
+            onPress={() => {
+              setExpanded(!expaneded);
+              props.swtichExpanded();
+            }}
+            style={{ flex: 1 }}
+          >
+            {type === 'reps' ? (
+              <Text style={styles.subText}>{`x${value}`}</Text>
+            ) : (
+              <Text style={styles.subText}>{timerToString(value)}</Text>
+            )}
+          </TouchableWithoutFeedback>
         </View>
-      </Animated.View>
-      {/* <MaterialIcons
+
+        {/* <MaterialIcons
         name="delete"
         style={{ fontSize: 30, color: 'white' }}
         onPress={() => {
           props.deleteExercise(workout_id, id);
         }}
       /> */}
-    </TouchableWithoutFeedback>
+      </Animated.View>
+    </View>
   );
 };
 
-export default connect(null, { deleteExercise })(ExcItem);
+export default connect(null, { deleteExercise, editExercise })(ExcItem);
 
 const styles = StyleSheet.create({
+  mainContainer: {
+    zIndex: 100,
+    width: ITEM_WIDTH,
+    alignSelf: 'center',
+  },
   container: {
     height: ITEM_HEIGHT,
-    width: metrics.width * 0.95,
+    width: ITEM_WIDTH,
     alignSelf: 'center',
-    paddingVertical: 5,
+    paddingVertical: 10,
     backgroundColor: palette.secondary,
-    borderRadius: ITEM_HEIGHT * 0.2,
+    borderRadius: BORDER_RADIUS,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -131,16 +203,21 @@ const styles = StyleSheet.create({
     elevation: 17,
     marginVertical: 5,
     paddingHorizontal: 10,
+    zIndex: 100,
   },
   header: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
+    zIndex: 150,
   },
 
   text: {
     fontSize: 20,
+    color: palette.text.primary,
+    fontFamily: typography.fonts.primary,
   },
   subText: {
-    fontSize: 24,
+    fontSize: 35,
     color: palette.grayscale.medium,
   },
   icon: {

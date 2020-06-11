@@ -1,200 +1,91 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Text } from 'react-native-elements';
-import TimeSelector from '_components/TimeSelector';
+import { Text, Input } from 'react-native-elements';
 import Overlay from '_components/Overlay';
 import ExitButtons from '_components/ExitButtons';
-import Switch from '_components/Switch';
-import { TouchableWithoutFeedback, TextInput } from 'react-native-gesture-handler';
+import {  TextInput } from 'react-native-gesture-handler';
 import typography from '_typography';
 import palette from '_palette';
-import stylesheet from '_stylesheet';
-import { exerciseType, exercise } from '_types';
+import { position, exercise } from '_types';
 import { editExercise } from '_actions/creators/workout';
 import { connect } from 'react-redux';
 import { RootState } from '_rootReducer';
 import _ from 'lodash';
-import { fromTimer, timerToString } from '_helpers';
-import uid from 'uid';
-import ValueSelector from '_components/ValueSelector';
+import metrics from '_metrics';
 
 interface Props {
-  setOpened: (opened: boolean) => void;
   opened: boolean;
-  workout_id: string;
-  exercise_id?: string;
+  close: () => void;
+  currentPosition: position;
+  exerciseId: string;
+  name: string;
+  workoutId: string;
   editExercise: typeof editExercise;
-  exercise: exercise;
-  add: boolean;
-  title: string;
-  onConfirm: (exc: exercise) => void;
 }
 
-const Edit = ({
-  opened,
-  setOpened,
-  workout_id,
-  exercise_id,
-  onConfirm,
-  add,
-  exercise,
-  title,
-  ...props
-}: Props) => {
-  const { type, name, value } = exercise ? exercise : { type: null, name: null, value: null };
-  const [openedTimeSelector, setOpenedTimeSelector] = useState(false);
-  const [localType, setLocalType] = useState('reps');
-  const [localName, setLocalName] = useState(add ? 'Enter name' : name);
-  const [localValue, setLocalValue] = useState(0);
-  const excType = add ? localType : type;
-  const excValue = add ? localValue : value;
-  const toRender = exercise_id || add;
+class Edit extends React.Component<Props> {
+  state = {
+    inputValue: '',
+  };
 
-  return (
-    <Overlay
-      {...{ opened, close: () => setOpened(false) }}
-      absoluteComponent={() => {
-        if (excType === 'time' && toRender) {
-          return (
-            <TimeSelector
-              opened={openedTimeSelector}
-              setOpened={setOpenedTimeSelector}
-              title="Time: "
-              onConfirm={(minutes, time) => {
-                const v = fromTimer(minutes, time);
-                if (add) {
-                  setLocalValue(v);
-                } else {
-                  props.editExercise(workout_id, exercise_id, {
-                    value: v,
-                  });
-                }
-              }}
-            />
-          );
-        } else if (toRender) {
-          return (
-            <ValueSelector
-              opened={openedTimeSelector}
-              setOpened={setOpenedTimeSelector}
-              title="Reps: "
-              onConfirm={(value) => {
-                if (add) {
-                  setLocalValue(value);
-                } else {
-                  props.editExercise(workout_id, exercise_id, {
-                    value,
-                  });
-                }
-              }}
-            />
-          );
-        }
-      }}
-    >
-      {toRender && (
-        <View style={{ flex: 1, justifyContent: 'space-between' }}>
-          <Text style={styles.title}>{title}</Text>
-          <View style={styles.settingsContainer}>
-            <View style={styles.setting}>
-              <Text>Name:</Text>
-              <TextInput
-                value={localName}
-                onChangeText={(text) => {
-                  setLocalName(text);
-                }}
-                placeholder="Enter a name"
-                style={styles.textInput}
-                placeholderTextColor={palette.text.gray}
-                onChange={() => {
-                  if (!add) {
-                    props.editExercise(workout_id, exercise_id, {
-                      name: localName,
-                    });
-                  }
-                }}
-                onEndEditing={() => {
-                  if (!add) {
-                    props.editExercise(workout_id, exercise_id, {
-                      name: localName,
-                    });
-                  }
-                }}
-              />
-            </View>
-            <View style={styles.setting}>
-              <Text>Type:</Text>
-              <Switch
-                onChange={(newValue) => {
-                  const newType = newValue === 'Reps' ? 'reps' : 'time';
-                  if (add) {
-                    setLocalType(newType);
-                  } else {
-                    props.editExercise(workout_id, exercise_id, {
-                      type: newType,
-                    });
-                  }
-                }}
-                initValue={excType !== 'reps'}
-                left="Reps"
-                right="Time"
-              />
-            </View>
-            <View style={styles.setting}>
-              <Text>Value: </Text>
-              <TouchableWithoutFeedback
-                onPress={() => {
-                  setOpenedTimeSelector(true);
-                }}
-              >
-                <Text style={stylesheet.subText}>
-                  {excType === 'reps' ? excValue : timerToString(excValue)}
-                </Text>
-              </TouchableWithoutFeedback>
-            </View>
-          </View>
-          {add ? (
-            <ExitButtons
-              {...{ setOpened }}
-              onConfirm={() => {
-                const exc: exercise = {
-                  name: localName,
-                  type: localType,
-                  value: localValue,
-                  id: uid(),
-                };
-                onConfirm(exc);
-              }}
-            />
-          ) : (
-            <TouchableWithoutFeedback
-              onPress={() => {
-                setOpened(false);
-              }}
-            >
-              <Text style={styles.endEditText}>OK</Text>
-            </TouchableWithoutFeedback>
-          )}
+  componentDidUpdate(prevProps: Props) {
+    if (this.props.exerciseId !== prevProps.exerciseId && this.props.exerciseId !== null) {
+      this.setState({ inputValue: this.props.name });
+    }
+  }
+
+  onConfirm = () => {
+    const { workoutId, exerciseId } = this.props;
+    const { inputValue } = this.state;
+    this.props.editExercise(workoutId, exerciseId, { name: inputValue });
+  };
+
+  render() {
+    const { opened, currentPosition: pos } = this.props;
+    const { inputValue } = this.state;
+    const currentPosition = pos ? pos : { x: 0, y: 0 };
+
+    return (
+      <Overlay
+        width={metrics.width * 0.7}
+        height={metrics.height * 0.22}
+        opened={opened}
+        close={this.props.close}
+        x={currentPosition.x}
+        y={currentPosition.y}
+      >
+        <Text style={styles.editTitle}>Exercise name:</Text>
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.textInput}
+            value={inputValue}
+            onChangeText={(text) => this.setState({ inputValue: text })}
+          />
         </View>
-      )}
-    </Overlay>
-  );
-};
+        <ExitButtons
+          setOpened={this.props.close}
+          onConfirm={this.onConfirm}
+          onCancel={this.props.close}
+        />
+      </Overlay>
+    );
+  }
+}
 
 const mapStateToProps = (state: RootState, ownProps: Props) => {
-  const { add, workout_id, exercise_id } = ownProps;
-  if (!add && exercise_id) {
+  const { exerciseId, workoutId } = ownProps;
+
+  if (exerciseId) {
     const { exercises } = state.workouts[
-      _.findIndex(state.workouts, ({ id: currentId }) => currentId === workout_id)
+      _.findIndex(state.workouts, ({ id: currentId }) => currentId === workoutId)
     ];
 
-    const exercise = exercises[_.findIndex(exercises, { id: exercise_id })];
+    const exercise: exercise = exercises[_.findIndex(exercises, { id: exerciseId })];
 
     return {
-      exercise,
+      name: exercise.name,
     };
-  }
-  return {};
+  } else return {};
 };
 
 export default connect(mapStateToProps, {
@@ -202,29 +93,24 @@ export default connect(mapStateToProps, {
 })(Edit);
 
 const styles = StyleSheet.create({
-  setting: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-  },
-  settingsContainer: {
-    marginTop: 10,
-    height: '40%',
-    justifyContent: 'space-between',
-  },
-  title: {
-    alignSelf: 'center',
-    fontSize: typography.fontSize.medium,
-  },
   textInput: {
     fontSize: typography.fontSize.normal,
     color: palette.text.primary,
-    width: '50%',
-  },
-  endEditText: {
-    fontSize: 25,
-    color: palette.text.primary,
+    flex: 1,
+    fontFamily: typography.fonts.primary,
     alignSelf: 'center',
+    backgroundColor: 'rgba(0,0,0,0.15)',
+    width: '100%',
+    borderRadius: 10,
+    paddingHorizontal: 5,
+    height: 20,
+  },
+
+  editTitle: {
+    fontSize: 16,
     marginBottom: 10,
+  },
+  inputContainer: {
+    height: 30,
   },
 });

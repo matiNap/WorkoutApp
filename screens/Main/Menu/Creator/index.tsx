@@ -20,6 +20,9 @@ import { saveNameWorkout, addExercise } from '_actions/creators/workout';
 import _ from 'lodash';
 import reactotron from 'reactotronConfig';
 import { timerToString } from '_helpers';
+import { useSpringTransition } from 'react-native-redash';
+import { SpringUtils, interpolate } from 'react-native-reanimated';
+import metrics from '_metrics';
 
 interface Props {
   route: {
@@ -38,7 +41,10 @@ const Creator = ({ workout, ...props }: Props) => {
   const [name, setName] = useState(workoutTitle);
   const [settingsOpened, setSettingsOpened] = useState(false);
   const [addOpened, setAddOpened] = useState(false);
+  const [expand, setExpanded] = useState(false);
   const navigation = useNavigation();
+  const expandTransition = useSpringTransition(expand, SpringUtils.makeDefaultConfig());
+
   BackHandler.addEventListener('hardwareBackPress', () => {
     if (settingsOpened) {
       setSettingsOpened(false);
@@ -48,9 +54,18 @@ const Creator = ({ workout, ...props }: Props) => {
     navigation.goBack();
   });
 
+  const headerTranslateY = interpolate(expandTransition, {
+    inputRange: [0, 1],
+    outputRange: [0, -metrics.headerHeight],
+  });
+  const addButtonOffsetY = interpolate(expandTransition, {
+    inputRange: [0, 1],
+    outputRange: [0, metrics.addButtonHeight + 20],
+  });
+
   return (
     <View style={styles.container}>
-      <Header>
+      <Header style={{ transform: [{ translateY: headerTranslateY }] }}>
         <View style={styles.left}>
           <Back
             onPress={() => {
@@ -87,28 +102,18 @@ const Creator = ({ workout, ...props }: Props) => {
           </TouchableWithoutFeedback>
         </View>
       </Header>
-      <Edit
-        opened={addOpened}
-        setOpened={setAddOpened}
-        title="Add excercise: "
-        add
-        onConfirm={(exc: exercise) => {
-          props.addExercise(id, exc);
-        }}
-      />
-      <DraggableList
-        data={exercises}
-        {...{ id }}
-        addButton={({ addValue }) => (
-          <AddButton
-            onPress={() => {
-              setAddOpened(true);
-              addValue();
-            }}
-          />
-        )}
-      />
 
+      <DraggableList
+        swtitchExpanded={() => setExpanded(!expand)}
+        data={exercises}
+        {...{ id, headerTranslateY }}
+      />
+      {/* <AddButton
+        style={{ transform: [{ translateY: addButtonOffsetY }] }}
+        onPress={() => {
+          props.addExercise(id, { name: 'New exercise', type: 'reps', value: 0 });
+        }}
+      /> */}
       <Settings
         opened={settingsOpened}
         setOpened={setSettingsOpened}
