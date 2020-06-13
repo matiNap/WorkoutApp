@@ -1,24 +1,24 @@
 import React from 'react';
-import { StyleSheet, View, Text } from 'react-native';
-import Animated from 'react-native-reanimated';
+import { View } from 'react-native';
+import Animated, { Easing } from 'react-native-reanimated';
 import ExcItem from './ExcItem';
 import { exercise } from '_types';
 import Edit from './Edit';
-import Overlay from '_components/Overlay';
-import reactotron from 'reactotronConfig';
 import { position } from '_types';
-import metrics from '_metrics';
-import { ScrollView } from 'react-native-gesture-handler';
+import { ScrollView, TouchableWithoutFeedback } from 'react-native-gesture-handler';
+import EditValue from './EditValue';
+import { withTimingTransition } from 'react-native-redash';
 
 interface Props {
   data: exercise[];
   id: string;
-  swtitchExpanded: () => void;
-  headerTranslateY: Animated.Value<number>;
+  openEditList: (open: boolean) => void;
+  editListOpened: boolean;
 }
 
 interface State {
   selectedId: string | null;
+  selectedValueId: string | null;
   selectedIndex: number | null;
 }
 
@@ -29,6 +29,7 @@ class DraggableList extends React.Component<Props, State> {
   state: State = {
     selectedId: null,
     selectedIndex: null,
+    selectedValueId: null,
   };
 
   constructor(props: Props) {
@@ -51,60 +52,85 @@ class DraggableList extends React.Component<Props, State> {
     this.setState({ selectedId: null });
   };
 
-  getCurrentPosition = () => {
+  closeEditValue = () => {
+    this.setState({ selectedValueId: null });
+  };
+
+  getCurrentNamePosition = () => {
     const { selectedIndex: index } = this.state;
 
-    if (index) {
+    if (index !== null) {
       return this.positions[index] ? this.positions[index] : { x: 0, y: 0 };
     }
 
     return { x: 0, y: 0 };
   };
 
+  openEditList = () => {
+    this.props.openEditList(true);
+  };
+
   render() {
-    const { data, id, headerTranslateY } = this.props;
-    const { selectedId } = this.state;
+    const { data, id: workout_id, editListOpened } = this.props;
+    const { selectedId, selectedValueId } = this.state;
     const editOpened = selectedId ? true : false;
-    const currentPosition = this.getCurrentPosition();
+    const currentPosition = this.getCurrentNamePosition();
+
+    const editValueOpened = selectedValueId ? true : false;
+    const editListTransitionValue = withTimingTransition(editListOpened, {
+      duration: 150,
+      easing: Easing.inOut(Easing.exp),
+    });
 
     return (
       <View style={{ flex: 1 }}>
-        <Animated.View style={{ transform: [{ translateY: headerTranslateY }], flex: 1 }}>
-          <ScrollView
-            onScroll={() => {
-              reactotron.log('scrol');
-            }}
-            contentContainerStyle={styles.listContainer}
-          >
-            {data.map((item, index) => (
-              <ExcItem
-                swtichExpanded={this.props.swtitchExpanded}
-                onPress={() => {
-                  this.setState({
-                    selectedId: item.id,
-                    selectedIndex: index,
-                  });
-                }}
-                {...{ translateY: this.values[index], index }}
-                value={item.value}
-                title={item.name}
-                type={item.type}
-                listLength={data.length}
-                values={this.values}
-                key={item.id}
-                id={item.id}
-                workout_id={id}
-                setPosition={this.setPosition}
-              />
-            ))}
-          </ScrollView>
-        </Animated.View>
+        <ScrollView showsVerticalScrollIndicator={false}>
+          {data.map((item, index) => {
+            const { value, type, name, id } = item;
+            return (
+              <TouchableWithoutFeedback key={id} onLongPress={this.openEditList}>
+                <ExcItem
+                  {...{
+                    translateY: this.values[index],
+                    index,
+                    editListOpened,
+                    id,
+                    title: name,
+                    type,
+                    value,
+                    workout_id,
+                  }}
+                  onPressName={() => {
+                    this.setState({
+                      selectedId: item.id,
+                      selectedIndex: index,
+                    });
+                  }}
+                  onPressValue={() => {
+                    this.setState({
+                      selectedValueId: item.id,
+                    });
+                  }}
+                  listLength={data.length}
+                  values={this.values}
+                  setPosition={this.setPosition}
+                />
+              </TouchableWithoutFeedback>
+            );
+          })}
+        </ScrollView>
+        <EditValue
+          opened={editValueOpened}
+          close={this.closeEditValue}
+          workoutId={workout_id}
+          exerciseId={selectedValueId}
+        />
         <Edit
           opened={editOpened}
           close={this.closeEdit}
           currentPosition={currentPosition}
           exerciseId={selectedId}
-          workoutId={id}
+          workoutId={workout_id}
         />
       </View>
     );
@@ -112,9 +138,3 @@ class DraggableList extends React.Component<Props, State> {
 }
 
 export default DraggableList;
-
-const styles = StyleSheet.create({
-  listContainer: {
-    flex: 1,
-  },
-});

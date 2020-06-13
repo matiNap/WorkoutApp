@@ -7,22 +7,22 @@ import { MaterialIcons, AntDesign } from '@expo/vector-icons';
 import AddButton from './components/AddButton';
 import Header from '_components/Header';
 import { useNavigation } from '@react-navigation/native';
-import Settings from './Settings';
 import typography from '_typography';
 import Back from '_components/Back';
-import Edit from './components/Edit';
+
 import DraggableList from './components/DraggableList';
-import { useSelector, connect } from 'react-redux';
+import { connect } from 'react-redux';
 import { RootState } from '_rootReducer';
-import { workout, exercise } from '_types';
+import { workout } from '_types';
 import { saveNameWorkout, addExercise } from '_actions/creators/workout';
+import HideIcon from '_components/HideIcon';
 
 import _ from 'lodash';
-import reactotron from 'reactotronConfig';
 import { timerToString } from '_helpers';
-import { useSpringTransition } from 'react-native-redash';
-import { SpringUtils, interpolate } from 'react-native-reanimated';
+import { useTransition, useSpringTransition } from 'react-native-redash';
+import { Easing, interpolate } from 'react-native-reanimated';
 import metrics from '_metrics';
+import Settings from './Settings';
 
 interface Props {
   route: {
@@ -40,10 +40,8 @@ const Creator = ({ workout, ...props }: Props) => {
   const { type, exerciseBreak, typeBreak, name: workoutTitle, exercises, id, time, loop } = workout;
   const [name, setName] = useState(workoutTitle);
   const [settingsOpened, setSettingsOpened] = useState(false);
-  const [addOpened, setAddOpened] = useState(false);
-  const [expand, setExpanded] = useState(false);
+  const [editListOpened, setEditListOpened] = useState(false);
   const navigation = useNavigation();
-  const expandTransition = useSpringTransition(expand, SpringUtils.makeDefaultConfig());
 
   BackHandler.addEventListener('hardwareBackPress', () => {
     if (settingsOpened) {
@@ -53,19 +51,21 @@ const Creator = ({ workout, ...props }: Props) => {
 
     navigation.goBack();
   });
-
-  const headerTranslateY = interpolate(expandTransition, {
+  const editListOpenedTransition = useSpringTransition(editListOpened, {});
+  const addButtonOffset = interpolate(editListOpenedTransition, {
     inputRange: [0, 1],
-    outputRange: [0, -metrics.headerHeight],
+    outputRange: [0, 1.5 * metrics.addButtonHeight],
   });
-  const addButtonOffsetY = interpolate(expandTransition, {
-    inputRange: [0, 1],
-    outputRange: [0, metrics.addButtonHeight + 20],
-  });
-
   return (
     <View style={styles.container}>
-      <Header style={{ transform: [{ translateY: headerTranslateY }] }}>
+      <HideIcon
+        onPress={() => {
+          console.log('on press');
+          setEditListOpened(false);
+        }}
+        transitionValue={editListOpenedTransition}
+      />
+      <Header>
         <View style={styles.left}>
           <Back
             onPress={() => {
@@ -104,16 +104,18 @@ const Creator = ({ workout, ...props }: Props) => {
       </Header>
 
       <DraggableList
-        swtitchExpanded={() => setExpanded(!expand)}
         data={exercises}
-        {...{ id, headerTranslateY }}
+        {...{ id, editListOpened }}
+        openEditList={(open) => setEditListOpened(open)}
       />
-      {/* <AddButton
-        style={{ transform: [{ translateY: addButtonOffsetY }] }}
+
+      <AddButton
+        style={{ transform: [{ translateY: addButtonOffset }] }}
         onPress={() => {
           props.addExercise(id, { name: 'New exercise', type: 'reps', value: 0 });
         }}
-      /> */}
+      />
+
       <Settings
         opened={settingsOpened}
         setOpened={setSettingsOpened}
@@ -178,5 +180,8 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     color: palette.grayscale.light,
     marginLeft: 5,
+  },
+  hideIcon: {
+    fontSize: 25,
   },
 });

@@ -82,4 +82,9 @@ export const createExerciseTodoList = (
   return todo;
 };
 
-// export const
+export const createRange = (min: number, max: number) => {
+  let values = [];
+  for (let i = min; i < max; i++) values.push(i <= 9 ? `0${i}` : i);
+
+  return values;
+};

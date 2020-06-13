@@ -12,8 +12,8 @@ interface Props {
   children: ReactNode;
   style?: CSSProperties;
   close: () => void;
-  x: number;
-  y: number;
+  x?: number;
+  y?: number;
 }
 
 const WIDTH = metrics.width * 0.8;
@@ -42,19 +42,25 @@ const Overlay = ({
   const [left, setLeft] = useState(0);
   const [width, setWidth] = useState(0);
   const [height, setHeight] = useState(0);
+  const middleY = metrics.height / 2 - height / 2;
+  const middleX = metrics.width / 2 - width / 2;
 
   const transitionValue = useSpringTransition(opened, {});
   const posY = interpolate(transitionValue, {
     inputRange: [0, 1],
-    outputRange: [y, metrics.height / 2 - height / 2],
+    outputRange: [y ? y : middleY, middleY],
   });
   const posX = interpolate(transitionValue, {
     inputRange: [0, 1],
-    outputRange: [x, metrics.width / 2 - width / 2],
+    outputRange: [x ? x : middleX, middleX],
   });
   const opacity = interpolate(transitionValue, {
     inputRange: [0, 0.1, 1],
     outputRange: [0, 1, 1],
+  });
+  const scale = interpolate(transitionValue, {
+    inputRange: [0, 0.05, 1],
+    outputRange: [0, 0.6, 1],
   });
 
   return (
@@ -85,6 +91,7 @@ const Overlay = ({
               width: destWidth,
               height: destHeight,
               opacity: transitionValue,
+              transform: [{ scale }],
               ...style,
               top: posY,
               left: posX,

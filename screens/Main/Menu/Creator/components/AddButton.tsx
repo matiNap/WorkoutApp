@@ -14,14 +14,14 @@ interface Props {
 
 const AddButton = ({ onPress, style }: Props) => {
   return (
-    <TouchableWithoutFeedback {...{ onPress }}>
-      <Animated.View style={[styles.container, style]}>
+    <Animated.View style={[styles.container, style]}>
+      <TouchableWithoutFeedback {...{ onPress }}>
         <View style={styles.content}>
           <MaterialIcons name="add" style={styles.icon} />
           <Text>Add exercise</Text>
         </View>
-      </Animated.View>
-    </TouchableWithoutFeedback>
+      </TouchableWithoutFeedback>
+    </Animated.View>
   );
 };
 
@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   container: {
-    // position: 'absolute',
+    position: 'absolute',
     height: metrics.addButtonHeight,
     bottom: 0,
     left: 0,
