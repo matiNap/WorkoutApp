@@ -1,9 +1,9 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Text, Input } from 'react-native-elements';
+import { Text } from 'react-native-elements';
 import Overlay from '_components/Overlay';
 import ExitButtons from '_components/ExitButtons';
-import {  TextInput } from 'react-native-gesture-handler';
+import { TextInput } from 'react-native-gesture-handler';
 import typography from '_typography';
 import palette from '_palette';
 import { position, exercise } from '_types';

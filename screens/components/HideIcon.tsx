@@ -18,17 +18,8 @@ const LeftEditButton = ({ transitionValue, onPress }: Props) => {
     outputRange: [SIZE + 30, 0],
   });
   return (
-    <Animated.View
-      style={[
-        styles.container,
-        { transform: [{ translateY: offsetY }] },
-      ]}
-    >
-      <FontAwesome
-        name="remove"
-        style={styles.icon}
-        {...{ onPress }}
-      />
+    <Animated.View style={[styles.container, { transform: [{ translateY: offsetY }] }]}>
+      <FontAwesome name="remove" style={styles.icon} {...{ onPress }} />
     </Animated.View>
   );
 };

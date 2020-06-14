@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { exerciseType } from '_types';
 import { Text } from 'react-native-elements';
 import palette from '_palette';
 import metrics from '_metrics';
-import Animated, { useCode, Easing } from 'react-native-reanimated';
+import Animated, { useCode, Easing, interpolate, Extrapolate, call } from 'react-native-reanimated';
 import { State, TouchableWithoutFeedback } from 'react-native-gesture-handler';
 import { onGestureEvent, timing, approximates } from 'react-native-redash';
 import { timerToString } from '_helpers';
@@ -33,6 +33,7 @@ interface Props {
   id: string;
   setPosition: (position: position, index: number) => void;
   editListOpened: boolean;
+  editTransition: Animated.Value<number>;
 }
 
 const ITEM_HEIGHT = metrics.height * 0.2;
@@ -52,6 +53,7 @@ const ExcItem = ({
   onPressName,
   onPressValue,
   editListOpened,
+  editTransition,
   ...props
 }: Props) => {
   const absoluteY = new Animated.Value(0);
@@ -94,6 +96,31 @@ const ExcItem = ({
     ],
     [],
   );
+  const editWidth = interpolate(editTransition, {
+    inputRange: [0, 1],
+    outputRange: [40, 0],
+    extrapolate: Extrapolate.CLAMP,
+  });
+  const reversedTransition = interpolate(editTransition, {
+    inputRange: [0, 1],
+    outputRange: [1, 0],
+    extrapolate: Extrapolate.CLAMP,
+  });
+  const [animationEnded, setAnimationEnded] = useState(true);
+  useCode(
+    () =>
+      cond(
+        approximates(editTransition, 0),
+        call([], () => {
+          setAnimationEnded(true);
+        }),
+        call([], () => {
+          setAnimationEnded(false);
+        }),
+      ),
+    [],
+  );
+
   return (
     <View style={styles.mainContainer}>
       <View style={styles.container}>
@@ -112,62 +139,74 @@ const ExcItem = ({
             }}
             style={{ flexDirection: 'row' }}
           >
-            {!editListOpened && <AntDesign name="edit" style={styles.editIcon} />}
+            <Animated.View style={{ width: editWidth }}>
+              <AntDesign name="edit" style={styles.editIcon} />
+            </Animated.View>
             <Text style={[styles.text]}>{title}</Text>
           </TouchableWithoutFeedback>
-          {!editListOpened && (
-            <Switch
-              initValue={type === 'time'}
-              left="Reps"
-              right="Time"
-              onChange={(newValue) => {
+
+          <Switch
+            style={{ opacity: reversedTransition, scale: reversedTransition }}
+            initValue={type === 'time'}
+            left="Reps"
+            right="Time"
+            onChange={(newValue) => {
+              if (animationEnded) {
                 const type = newValue === 'Reps' ? 'reps' : 'time';
                 props.editExercise(workout_id, id, {
                   type,
                 });
-              }}
-            />
-          )}
+              }
+            }}
+          />
         </View>
 
-        {!editListOpened ? (
-          <View style={styles.content}>
-            <TouchableWithoutFeedback
+        <Animated.View
+          style={[
+            styles.content,
+            { opacity: reversedTransition, transform: [{ scale: reversedTransition }] },
+          ]}
+        >
+          <TouchableWithoutFeedback
+            onPress={() => {
+              if (!editListOpened) onPressValue();
+            }}
+          >
+            {type === 'reps' ? (
+              <Text style={styles.subText}>{`x${value}`}</Text>
+            ) : (
+              <Text style={styles.subText}>{timerToString(value)}</Text>
+            )}
+          </TouchableWithoutFeedback>
+        </Animated.View>
+
+        <Animated.View
+          style={[
+            styles.editListContent,
+            { opacity: editTransition, transform: [{ scale: editTransition }] },
+          ]}
+        >
+          <View style={{ flexGrow: 2, justifyContent: 'center' }}>
+            <MaterialIcons
+              name="delete"
+              style={styles.deleteIcon}
               onPress={() => {
-                if (!editListOpened) onPressValue();
-              }}
-            >
-              {type === 'reps' ? (
-                <Text style={styles.subText}>{`x${value}`}</Text>
-              ) : (
-                <Text style={[styles.subText]}>{timerToString(value)}</Text>
-              )}
-            </TouchableWithoutFeedback>
-          </View>
-        ) : (
-          <View style={styles.editListContent}>
-            <View style={{ flexGrow: 2, justifyContent: 'center' }}>
-              <MaterialIcons
-                name="delete"
-                style={styles.deleteIcon}
-                onPress={() => {
-                  props.deleteExercise(workout_id, id);
-                }}
-              />
-            </View>
-            <View
-              style={{
-                height: 60,
-                width: 4,
-                borderRadius: 2,
-                backgroundColor: palette.text.gray,
-                alignSelf: 'center',
-                marginRight: 20,
+                if (!animationEnded) props.deleteExercise(workout_id, id);
               }}
             />
-            <MaterialIcons name="drag-handle" style={styles.icon} />
           </View>
-        )}
+          <View
+            style={{
+              height: 60,
+              width: 4,
+              borderRadius: 2,
+              backgroundColor: palette.text.gray,
+              alignSelf: 'center',
+              marginRight: 20,
+            }}
+          />
+          <MaterialIcons name="drag-handle" style={styles.icon} />
+        </Animated.View>
       </View>
     </View>
   );
@@ -228,6 +267,8 @@ const styles = StyleSheet.create({
     flex: 1,
     alignContent: 'center',
     zIndex: 100,
+    position: 'absolute',
+    bottom: ITEM_HEIGHT / 4,
   },
   editIcon: {
     color: palette.text.gray,
@@ -241,5 +282,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flex: 1,
     alignContent: 'center',
+    position: 'absolute',
+    bottom: ITEM_HEIGHT / 4,
   },
 });

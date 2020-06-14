@@ -19,8 +19,8 @@ import HideIcon from '_components/HideIcon';
 
 import _ from 'lodash';
 import { timerToString } from '_helpers';
-import { useTransition, useSpringTransition } from 'react-native-redash';
-import { Easing, interpolate } from 'react-native-reanimated';
+import { useSpringTransition } from 'react-native-redash';
+import { interpolate } from 'react-native-reanimated';
 import metrics from '_metrics';
 import Settings from './Settings';
 
@@ -58,13 +58,6 @@ const Creator = ({ workout, ...props }: Props) => {
   });
   return (
     <View style={styles.container}>
-      <HideIcon
-        onPress={() => {
-          console.log('on press');
-          setEditListOpened(false);
-        }}
-        transitionValue={editListOpenedTransition}
-      />
       <Header>
         <View style={styles.left}>
           <Back
@@ -105,8 +98,15 @@ const Creator = ({ workout, ...props }: Props) => {
 
       <DraggableList
         data={exercises}
+        editTransition={editListOpenedTransition}
         {...{ id, editListOpened }}
         openEditList={(open) => setEditListOpened(open)}
+      />
+      <HideIcon
+        onPress={() => {
+          setEditListOpened(false);
+        }}
+        transitionValue={editListOpenedTransition}
       />
 
       <AddButton

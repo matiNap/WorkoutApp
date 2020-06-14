@@ -2,7 +2,7 @@ import React, { ReactNode, CSSProperties, useState } from 'react';
 import { StyleSheet, BackHandler, View } from 'react-native';
 import metrics from '_metrics';
 import { useSpringTransition } from 'react-native-redash';
-import Animated, { Easing, interpolate } from 'react-native-reanimated';
+import Animated, { interpolate } from 'react-native-reanimated';
 import palette from '_palette';
 
 interface Props {
@@ -62,7 +62,7 @@ const Overlay = ({
     inputRange: [0, 0.05, 1],
     outputRange: [0, 0.6, 1],
   });
-
+  const pointerEvents = 'box-none';
   return (
     <View
       style={styles.main}
@@ -72,6 +72,7 @@ const Overlay = ({
           setTop(py);
         });
       }}
+      {...{ pointerEvents }}
     >
       <Animated.View
         style={[
@@ -82,7 +83,7 @@ const Overlay = ({
           },
           styles.background,
         ]}
-        // pointerEvents="box-none"
+        {...{ pointerEvents }}
       >
         <Animated.View
           style={[
@@ -102,6 +103,7 @@ const Overlay = ({
             setWidth(width);
             setHeight(height);
           }}
+          {...{ pointerEvents }}
         >
           {opened ? children : null}
         </Animated.View>

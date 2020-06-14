@@ -1,19 +1,20 @@
 import React from 'react';
-import { View } from 'react-native';
-import Animated, { Easing } from 'react-native-reanimated';
+import { View, StyleSheet } from 'react-native';
+import Animated from 'react-native-reanimated';
 import ExcItem from './ExcItem';
 import { exercise } from '_types';
 import Edit from './Edit';
 import { position } from '_types';
 import { ScrollView, TouchableWithoutFeedback } from 'react-native-gesture-handler';
 import EditValue from './EditValue';
-import { withTimingTransition } from 'react-native-redash';
+import metrics from '_metrics';
 
 interface Props {
   data: exercise[];
   id: string;
   openEditList: (open: boolean) => void;
   editListOpened: boolean;
+  editTransition: Animated.Value<number>;
 }
 
 interface State {
@@ -71,20 +72,19 @@ class DraggableList extends React.Component<Props, State> {
   };
 
   render() {
-    const { data, id: workout_id, editListOpened } = this.props;
+    const { data, id: workout_id, editListOpened, editTransition } = this.props;
     const { selectedId, selectedValueId } = this.state;
     const editOpened = selectedId ? true : false;
     const currentPosition = this.getCurrentNamePosition();
 
     const editValueOpened = selectedValueId ? true : false;
-    const editListTransitionValue = withTimingTransition(editListOpened, {
-      duration: 150,
-      easing: Easing.inOut(Easing.exp),
-    });
 
     return (
       <View style={{ flex: 1 }}>
-        <ScrollView showsVerticalScrollIndicator={false}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.listContainer}
+        >
           {data.map((item, index) => {
             const { value, type, name, id } = item;
             return (
@@ -99,6 +99,7 @@ class DraggableList extends React.Component<Props, State> {
                     type,
                     value,
                     workout_id,
+                    editTransition,
                   }}
                   onPressName={() => {
                     this.setState({
@@ -138,3 +139,9 @@ class DraggableList extends React.Component<Props, State> {
 }
 
 export default DraggableList;
+
+const styles = StyleSheet.create({
+  listContainer: {
+    paddingBottom: metrics.addButtonHeight + 20,
+  },
+});

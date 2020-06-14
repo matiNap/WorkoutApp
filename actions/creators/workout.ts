@@ -230,7 +230,7 @@ const updateTime = (workoutId: string) => (dispatch, getState: () => RootState) 
       time += exercises[i].value;
     }
   }
-  console.log(time);
+
   if (time !== -1) {
     const { loop, exerciseBreak, typeBreak } = currentWorkout;
     time *= loop;

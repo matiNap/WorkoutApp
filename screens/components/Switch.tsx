@@ -1,12 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, CSSProperties } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-elements';
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 import { useTransition } from 'react-native-redash';
-import Animated, {
-  Easing,
-  interpolate,
-} from 'react-native-reanimated';
+import Animated, { Easing, interpolate } from 'react-native-reanimated';
 import palette from '_palette';
 
 interface Props {
@@ -14,11 +11,10 @@ interface Props {
   right: string;
   onChange: (newValue: string) => void;
   initValue: boolean;
+  style?: CSSProperties;
 }
 
-const { cond, eq, call } = Animated;
-
-const Switch = ({ left, right, onChange, initValue }: Props) => {
+const Switch = ({ left, right, onChange, initValue, style }: Props) => {
   const [swtich, setSwitch] = useState(initValue);
   const transitionValue = useTransition(swtich, {
     duration: 150,
@@ -40,7 +36,7 @@ const Switch = ({ left, right, onChange, initValue }: Props) => {
         }
       }}
     >
-      <View style={styles.container}>
+      <Animated.View style={[styles.container, style]}>
         <Animated.View
           style={[
             styles.setter,
@@ -59,7 +55,7 @@ const Switch = ({ left, right, onChange, initValue }: Props) => {
         <View style={styles.value}>
           <Text>{right}</Text>
         </View>
-      </View>
+      </Animated.View>
     </TouchableWithoutFeedback>
   );
 };
