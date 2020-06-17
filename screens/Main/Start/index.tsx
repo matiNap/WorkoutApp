@@ -1,43 +1,26 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text } from 'react-native-elements';
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
-import Overlay from '_components/Overlay';
 import palette from '_palette';
 import metrics from '_metrics';
-import WorkoutsList from '_components/WorkoutsList';
 
 interface Props {
   navigation: any;
 }
 
 const Selector = ({ navigation }: Props) => {
-  const [opened, setOpened] = useState(false);
   return (
     <View style={styles.container}>
       <TouchableWithoutFeedback
         onPress={() => {
-          setOpened(!opened);
+          navigation.navigate('Workout');
         }}
       >
         <View style={styles.startButton}>
           <Text style={styles.text}>START</Text>
         </View>
       </TouchableWithoutFeedback>
-      {/* <Overlay
-        {...{
-          opened,
-        }}
-        close={() => {
-          setOpened(false);
-        }}
-      >
-        <WorkoutsList
-          onPress={(workoutId) => {
-            navigation.navigate('Timer', { workoutId });
-          }}
-        />
-      </Overlay> */}
     </View>
   );
 };

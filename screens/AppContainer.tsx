@@ -11,6 +11,8 @@ import { connect } from 'react-redux';
 import { loadWorkouts } from '_actions/creators/workout';
 import { createStackNavigator } from '@react-navigation/stack';
 import Creator from './Main/Creator';
+import Start from './Main/Start';
+import metrics from '_metrics';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -28,15 +30,17 @@ const TabNav = () => {
         showLabel: false,
         activeTintColor: palette.primary,
         inactiveTintColor: palette.grayscale.light,
+
         style: {
-          backgroundColor: palette.secondary,
-          borderTopColor: 'black',
+          backgroundColor: palette.secondaryDark,
+          height: metrics.height * 0.08,
+          borderTopWidth: 0,
         },
       }}
     >
       <Tab.Screen
-        name="Workout"
-        component={Workout}
+        name="Start"
+        component={Start}
         options={{
           tabBarIcon: ({ color }) => <FontAwesome5 name="running" color={color} size={30} />,
         }}
