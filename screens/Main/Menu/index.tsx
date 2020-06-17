@@ -1,15 +1,41 @@
-import React from 'react';
-import { createStackNavigator } from '@react-navigation/stack';
-import Workouts from './Workouts';
-import Creator from './Creator';
+import React, { useState } from 'react';
+import { View, StyleSheet, StatusBar } from 'react-native';
+import palette from '_palette';
+import WorkoutsList from '_components/WorkoutsList';
+import AddWorkout from './components/AddWorkout';
+import { useSpringTransition } from 'react-native-redash';
+import HideIcon from '_components/HideIcon';
+import { useNavigation } from '@react-navigation/native';
 
-const Stack = createStackNavigator();
-
-export default () => {
+const Workouts = () => {
+  const [editOpened, setEditOpened] = useState(false);
+  const transitionValue = useSpringTransition(editOpened, {});
+  const { navigate } = useNavigation();
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Workouts" component={Workouts} />
-      <Stack.Screen name="Creator" component={Creator} />
-    </Stack.Navigator>
+    <View style={styles.container}>
+      <WorkoutsList
+        {...{ setEditOpened, editOpened, transitionValue }}
+        onPress={(workoutId) => navigate('Creator', { id: workoutId })}
+      />
+      <AddWorkout {...{ transitionValue }} />
+
+      <HideIcon
+        {...{
+          transitionValue,
+          onPress: () => setEditOpened(false),
+        }}
+      />
+    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: palette.secondary,
+    paddingTop: StatusBar.currentHeight + 15,
+    paddingHorizontal: 10,
+  },
+});
+
+export default Workouts;

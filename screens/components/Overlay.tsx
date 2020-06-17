@@ -1,5 +1,5 @@
 import React, { ReactNode, CSSProperties, useState } from 'react';
-import { StyleSheet, BackHandler, View, KeyboardAvoidingView } from 'react-native';
+import { StyleSheet, BackHandler, View, Keyboard } from 'react-native';
 import metrics from '_metrics';
 import { useSpringTransition } from 'react-native-redash';
 import Animated, { interpolate } from 'react-native-reanimated';
@@ -63,6 +63,7 @@ const Overlay = ({
     outputRange: [0, 0.6, 1],
   });
   const pointerEvents = 'box-none';
+
   return (
     <View
       style={styles.main}
@@ -74,42 +75,40 @@ const Overlay = ({
       }}
       {...{ pointerEvents }}
     >
-      <KeyboardAvoidingView behavior="position">
+      <Animated.View
+        style={[
+          {
+            top: -top,
+            left: -left,
+            opacity: opacity,
+          },
+          styles.background,
+        ]}
+        {...{ pointerEvents }}
+      >
         <Animated.View
           style={[
+            styles.container,
             {
-              top: -top,
-              left: -left,
-              opacity: opacity,
+              width: destWidth,
+              height: destHeight,
+              opacity: transitionValue,
+              transform: [{ scale }],
+              ...style,
+              top: posY,
+              left: posX,
             },
-            styles.background,
           ]}
+          onLayout={({ nativeEvent }) => {
+            const { width, height } = nativeEvent.layout;
+            setWidth(width);
+            setHeight(height);
+          }}
           {...{ pointerEvents }}
         >
-          <Animated.View
-            style={[
-              styles.container,
-              {
-                width: destWidth,
-                height: destHeight,
-                opacity: transitionValue,
-                transform: [{ scale }],
-                ...style,
-                top: posY,
-                left: posX,
-              },
-            ]}
-            onLayout={({ nativeEvent }) => {
-              const { width, height } = nativeEvent.layout;
-              setWidth(width);
-              setHeight(height);
-            }}
-            {...{ pointerEvents }}
-          >
-            {opened ? children : null}
-          </Animated.View>
+          {opened ? children : null}
         </Animated.View>
-      </KeyboardAvoidingView>
+      </Animated.View>
     </View>
   );
 };
