@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet } from 'react-native';
 import Animated, { interpolate } from 'react-native-reanimated';
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -24,12 +24,7 @@ const AddWorkout = ({ transitionValue, ...props }: Props) => {
     outputRange: [0, ADD_SIZE + ADD_X_POS],
   });
   return (
-    <Animated.View
-      style={[
-        styles.addContainer,
-        { transform: [{ translateX: addOffsetX }] },
-      ]}
-    >
+    <Animated.View style={[styles.addContainer, { transform: [{ translateX: addOffsetX }] }]}>
       <TouchableWithoutFeedback
         onPress={() => {
           props.createWorkout();

@@ -2,18 +2,14 @@ import React, { useState } from 'react';
 import { View, StyleSheet, StatusBar } from 'react-native';
 import palette from '_palette';
 import WorkoutsList from '_components/WorkoutsList';
-import { Easing } from 'react-native-reanimated';
 import AddWorkout from './components/AddWorkout';
-import { useTransition, useSpringTransition } from 'react-native-redash';
-import LeftEditButton from './components/LeftEditButton';
+import { useSpringTransition } from 'react-native-redash';
+import HideIcon from '_components/HideIcon';
 import { useNavigation } from '@react-navigation/native';
 
 const Workouts = () => {
   const [editOpened, setEditOpened] = useState(false);
-  const transitionValue = useSpringTransition(editOpened, {
-    // duration: 300,
-    easing: Easing.inOut(Easing.exp),
-  });
+  const transitionValue = useSpringTransition(editOpened, {});
   const { navigate } = useNavigation();
   return (
     <View style={styles.container}>
@@ -23,7 +19,7 @@ const Workouts = () => {
       />
       <AddWorkout {...{ transitionValue }} />
 
-      <LeftEditButton
+      <HideIcon
         {...{
           transitionValue,
           onPress: () => setEditOpened(false),

@@ -1,18 +1,10 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import {
-  PanGestureHandler,
-  State,
-} from 'react-native-gesture-handler';
+import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import Animated, { useCode } from 'react-native-reanimated';
 import palette from '_palette';
 import { Text } from 'react-native-elements';
-import {
-  usePanGestureHandler,
-  useValue,
-  snapPoint,
-  timing,
-} from 'react-native-redash';
+import { usePanGestureHandler, useValue, snapPoint, timing } from 'react-native-redash';
 import metrics from '_metrics';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -22,18 +14,7 @@ interface Props {
   label?: string;
 }
 
-const {
-  cond,
-  eq,
-  add,
-  set,
-  Clock,
-  clockRunning,
-  not,
-  floor,
-  divide,
-  call,
-} = Animated;
+const { cond, eq, add, set, Clock, clockRunning, not, floor, divide, call } = Animated;
 
 const CELL_HEIGHT = 40;
 
@@ -46,27 +27,17 @@ const Roll = ({ range, setIndex, label, selectedIndex }: Props) => {
   const snapPoints = values.map((_, i) => (i - 1) * -CELL_HEIGHT);
   const translationY = useValue(CELL_HEIGHT);
   const offsetY = useValue(0);
-  const {
-    gestureHandler,
-    state,
-    velocity,
-    translation,
-  } = usePanGestureHandler();
+  const { gestureHandler, state, velocity, translation } = usePanGestureHandler();
   const currentIndex = useValue(0);
   const to = snapPoint(translationY, velocity.y, snapPoints);
   useCode(
     () => [
-      cond(eq(state, State.ACTIVE), [
-        set(translationY, add(offsetY, translation.y)),
-      ]),
+      cond(eq(state, State.ACTIVE), [set(translationY, add(offsetY, translation.y))]),
       cond(eq(state, State.END), [
         set(offsetY, translationY),
         set(translationY, timing({ clock, from: translationY, to })),
         cond(not(clockRunning(clock)), [
-          set(
-            currentIndex,
-            add(floor(divide(translationY, -CELL_HEIGHT)), 1),
-          ),
+          set(currentIndex, add(floor(divide(translationY, -CELL_HEIGHT)), 1)),
           call([currentIndex], ([val]) => {
             setIndex(val);
           }),
@@ -110,10 +81,7 @@ const Roll = ({ range, setIndex, label, selectedIndex }: Props) => {
             }}
           >
             <Animated.View
-              style={[
-                styles.valueContainer,
-                { transform: [{ translateY: translationY }] },
-              ]}
+              style={[styles.valueContainer, { transform: [{ translateY: translationY }] }]}
             >
               {values.map((value) => {
                 return (

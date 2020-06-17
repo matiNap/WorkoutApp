@@ -1,31 +1,28 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, BackHandler } from 'react-native';
 import palette from '_palette';
-import {
-  TouchableWithoutFeedback,
-  TextInput,
-} from 'react-native-gesture-handler';
+import { TouchableWithoutFeedback, TextInput } from 'react-native-gesture-handler';
 import { MaterialIcons, AntDesign } from '@expo/vector-icons';
 
 import AddButton from './components/AddButton';
 import Header from '_components/Header';
 import { useNavigation } from '@react-navigation/native';
-import Settings from './Settings';
 import typography from '_typography';
 import Back from '_components/Back';
-import Edit from './components/Edit';
+
 import DraggableList from './components/DraggableList';
-import { useSelector, connect } from 'react-redux';
+import { connect } from 'react-redux';
 import { RootState } from '_rootReducer';
-import { workout, exercise } from '_types';
-import {
-  saveNameWorkout,
-  addExercise,
-} from '_actions/creators/workout';
+import { workout } from '_types';
+import { saveNameWorkout, addExercise } from '_actions/creators/workout';
+import HideIcon from '_components/HideIcon';
 
 import _ from 'lodash';
-import reactotron from 'reactotronConfig';
 import { timerToString } from '_helpers';
+import { useSpringTransition } from 'react-native-redash';
+import { interpolate } from 'react-native-reanimated';
+import metrics from '_metrics';
+import Settings from './Settings';
 
 interface Props {
   route: {
@@ -40,20 +37,12 @@ interface Props {
 }
 
 const Creator = ({ workout, ...props }: Props) => {
-  const {
-    type,
-    exerciseBreak,
-    typeBreak,
-    name: workoutTitle,
-    exercises,
-    id,
-    time,
-    loop,
-  } = workout;
+  const { type, exerciseBreak, typeBreak, name: workoutTitle, exercises, id, time, loop } = workout;
   const [name, setName] = useState(workoutTitle);
   const [settingsOpened, setSettingsOpened] = useState(false);
-  const [addOpened, setAddOpened] = useState(false);
+  const [editListOpened, setEditListOpened] = useState(false);
   const navigation = useNavigation();
+
   BackHandler.addEventListener('hardwareBackPress', () => {
     if (settingsOpened) {
       setSettingsOpened(false);
@@ -62,7 +51,11 @@ const Creator = ({ workout, ...props }: Props) => {
 
     navigation.goBack();
   });
-
+  const editListOpenedTransition = useSpringTransition(editListOpened, {});
+  const addButtonOffset = interpolate(editListOpenedTransition, {
+    inputRange: [0, 1],
+    outputRange: [0, 1.5 * metrics.addButtonHeight],
+  });
   return (
     <View style={styles.container}>
       <Header>
@@ -72,6 +65,7 @@ const Creator = ({ workout, ...props }: Props) => {
               navigation.goBack();
             }}
           />
+          <AntDesign name="edit" style={styles.editIcon} />
           <TextInput
             value={name}
             style={styles.textInput}
@@ -82,7 +76,6 @@ const Creator = ({ workout, ...props }: Props) => {
               props.saveNameWorkout(id, name);
             }}
           />
-          <AntDesign name="edit" style={styles.editIcon} />
         </View>
         <View
           style={{
@@ -98,33 +91,22 @@ const Creator = ({ workout, ...props }: Props) => {
               setSettingsOpened(!settingsOpened);
             }}
           >
-            <MaterialIcons
-              name="settings"
-              style={styles.headerIcon}
-            />
+            <MaterialIcons name="settings" style={styles.headerIcon} />
           </TouchableWithoutFeedback>
         </View>
       </Header>
-      <Edit
-        opened={addOpened}
-        setOpened={setAddOpened}
-        title="Add excercise: "
-        add
-        onConfirm={(exc: exercise) => {
-          props.addExercise(id, exc);
-        }}
-      />
+
       <DraggableList
         data={exercises}
-        {...{ id }}
-        addButton={({ addValue }) => (
-          <AddButton
-            onPress={() => {
-              setAddOpened(true);
-              addValue();
-            }}
-          />
-        )}
+        editTransition={editListOpenedTransition}
+        {...{ id, editListOpened, addButtonOffset }}
+        openEditList={(open) => setEditListOpened(open)}
+      />
+      <HideIcon
+        onPress={() => {
+          setEditListOpened(false);
+        }}
+        transitionValue={editListOpenedTransition}
       />
 
       <Settings
@@ -143,19 +125,14 @@ const mapStateToProps = (state: RootState, ownProps: Props) => {
     const workout = workouts[workouts.length - 1];
 
     return {
-      workout: workout
-        ? workout
-        : { type: null, exercises: [], name: 'Workout name' },
+      workout: workout ? workout : { type: null, exercises: [], name: 'Workout name' },
     };
   }
 
   const { id } = ownProps.route.params;
 
   return {
-    workout:
-      state.workouts[
-        _.findIndex(workouts, ({ id: currentId }) => currentId === id)
-      ],
+    workout: state.workouts[_.findIndex(workouts, ({ id: currentId }) => currentId === id)],
   };
 };
 
@@ -196,5 +173,8 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     color: palette.grayscale.light,
     marginLeft: 5,
+  },
+  hideIcon: {
+    fontSize: 25,
   },
 });

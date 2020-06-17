@@ -1,18 +1,27 @@
-import React from 'react';
-import { StyleSheet } from 'react-native';
+import React, { CSSProperties } from 'react';
+import { StyleSheet, View } from 'react-native';
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 import { MaterialIcons } from '@expo/vector-icons';
 import palette from '_palette';
+import metrics from '_metrics';
+import { Text } from 'react-native-elements';
+import Animated from 'react-native-reanimated';
 
 interface Props {
   onPress: () => void;
+  style?: CSSProperties;
 }
 
-const AddButton = ({ onPress }: Props) => {
+const AddButton = ({ onPress, style }: Props) => {
   return (
-    <TouchableWithoutFeedback {...{ onPress }}>
-      <MaterialIcons name="add" style={styles.icon} />
-    </TouchableWithoutFeedback>
+    <Animated.View style={[styles.container, style]}>
+      <TouchableWithoutFeedback {...{ onPress }}>
+        <View style={styles.content}>
+          <MaterialIcons name="add" style={styles.icon} />
+          <Text>Add exercise</Text>
+        </View>
+      </TouchableWithoutFeedback>
+    </Animated.View>
   );
 };
 
@@ -23,6 +32,22 @@ const styles = StyleSheet.create({
     fontSize: 45,
     paddingVertical: 10,
     color: palette.text.primary,
+    alignSelf: 'center',
+  },
+  container: {
+    position: 'absolute',
+    height: metrics.addButtonHeight,
+    bottom: 0,
+    left: 0,
+    width: metrics.width,
+    height: 60,
+    backgroundColor: palette.secondaryDark,
+    borderTopRightRadius: 10,
+    borderTopLeftRadius: 10,
+  },
+  content: {
+    flexDirection: 'row',
+    alignItems: 'center',
     alignSelf: 'center',
   },
 });
