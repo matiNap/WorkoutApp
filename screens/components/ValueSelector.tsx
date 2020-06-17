@@ -1,13 +1,12 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { StyleSheet, View, BackHandler } from 'react-native';
 import { Text } from 'react-native-elements';
 import Roll from '_components/TimeSelector/Roll';
 import ExitButtons from '_components/ExitButtons';
 import Overlay from '_components/Overlay';
 import { createRange } from '_helpers';
-import { position } from '_types';
 
-const RANGE = createRange(0, 60);
+const RANGE = createRange(1, 100);
 
 interface Props {
   title?: string;

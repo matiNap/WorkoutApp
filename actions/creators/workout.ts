@@ -180,6 +180,7 @@ export const addExercise = (workoutId: string, exercise: exercise) => (dispatch,
       },
     },
   });
+
   updateTime(workoutId)(dispatch, getState);
 };
 
@@ -242,6 +243,7 @@ export const reorderExercises = (a: number, b: number, workoutId: string) => asy
 };
 
 const updateTime = (workoutId: string) => (dispatch, getState: () => RootState) => {
+  reactotron.log('Update time');
   let time = -1;
   const { workouts } = getState();
   const currentWorkout: workout = workouts[_.findIndex(workouts, ({ id }) => id === workoutId)];

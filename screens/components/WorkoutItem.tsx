@@ -58,11 +58,9 @@ const WorkoutItem = ({
             />
           </Animated.View>
         )}
-        {type === 'intervals' && !editOpened && (
-          <Text style={styles.subText}>{timerToString(time)}</Text>
-        )}
+        {type === 'intervals' ||
+          (time !== -1 && !editOpened && <Text style={styles.subText}>{timerToString(time)}</Text>)}
       </View>
-      {/* {divider && <Divider style={styles.divider} />} */}
     </View>
   );
 };

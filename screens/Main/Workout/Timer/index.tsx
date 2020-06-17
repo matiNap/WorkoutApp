@@ -185,7 +185,7 @@ class Timer extends React.Component<Props, State> {
     const { workout } = this.props;
     const { ended, currentLoop, target, currentWorkoutTime } = this.state;
     const { type: targetType, currentTodo } = target;
-    const { loop, type: workoutType } = workout;
+    const { loop, type: workoutType, time: workoutTime } = workout;
 
     if (ended) {
       return (
@@ -196,13 +196,14 @@ class Timer extends React.Component<Props, State> {
     } else {
       return (
         <View>
-          {targetType !== 'reps' && (
-            <View style={styles.arcProgress}>
-              <ArcProgress
-                progress={new Animated.Value(1 - -currentWorkoutTime / currentTodo.value)}
-              />
-            </View>
-          )}
+          {targetType !== 'reps' ||
+            (workoutTime !== -1 && (
+              <View style={styles.arcProgress}>
+                <ArcProgress
+                  progress={new Animated.Value(1 - -currentWorkoutTime / currentTodo.value)}
+                />
+              </View>
+            ))}
           <View style={styles.currentTime}>
             {targetType !== 'reps' ? (
               <TouchableWithoutFeedback
