@@ -86,7 +86,6 @@ export const saveNameWorkout = (id: string, name: string) => (dispatch) => {
 };
 
 export const saveExercises = (id: string, exercises: exercise[]) => {
-  reactotron.log(exercises);
   getDatabase().transaction((tx) => {
     tx.executeSql('update workouts set exercises = ? where id = ?', [
       JSON.stringify(exercises),
@@ -169,7 +168,7 @@ const mergeExercises = (getState: () => RootState, exc: exercise, workoutId: str
 };
 
 export const addExercise = (workoutId: string, exercise: exercise) => (dispatch, getState) => {
-  const newExercises = mergeExercises(getState, { ...exercise, id: uid() }, workoutId);
+  const newExercises = mergeExercises(getState, { ...{ id: uid() }, ...exercise }, workoutId);
 
   saveExercises(workoutId, newExercises);
   dispatch({
@@ -213,6 +212,33 @@ export const editExercise = (workoutId: string, exerciseId: string, excUpdate: e
   });
 
   updateTime(workoutId)(dispatch, getState);
+};
+
+export const reorderExercises = (a: number, b: number, workoutId: string) => async (
+  dispatch,
+  getState,
+) => {
+  const state: RootState = getState();
+  const { workouts } = state;
+
+  const { exercises } = workouts[_.findIndex(workouts, (workout) => workout.id === workoutId)];
+  const exerciseA = exercises[a];
+  const exerciseB = exercises[b];
+
+  exercises[a] = exerciseB;
+  exercises[b] = exerciseA;
+
+  saveExercises(workoutId, exercises);
+
+  dispatch({
+    type: types.UPDATE_WORKOUT,
+    payload: {
+      data: {
+        exercises,
+      },
+      id: workoutId,
+    },
+  });
 };
 
 const updateTime = (workoutId: string) => (dispatch, getState: () => RootState) => {

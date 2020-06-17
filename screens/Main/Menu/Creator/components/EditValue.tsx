@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet } from 'react-native';
 import typography from '_typography';
 import palette from '_palette';
-import { exercise, exerciseType } from '_types';
+import { exercise, exerciseType } from 'types';
 import { editExercise } from '_actions/creators/workout';
 import { connect } from 'react-redux';
 import { RootState } from '_rootReducer';
@@ -19,6 +19,7 @@ interface Props {
   workoutId: string;
   editExercise: typeof editExercise;
   type: exerciseType;
+  updateLocalExercise: (index: number | string, update: exercise) => void;
 }
 
 const EditValue = ({ opened, type, close, workoutId, exerciseId, ...props }: Props) => {
@@ -29,7 +30,9 @@ const EditValue = ({ opened, type, close, workoutId, exerciseId, ...props }: Pro
         setOpened={close}
         title="Reps: "
         onConfirm={(value) => {
-          props.editExercise(workoutId, exerciseId, { value });
+          const updated = { value };
+          props.editExercise(workoutId, exerciseId, updated);
+          props.updateLocalExercise(exerciseId, updated);
         }}
       />
     );
@@ -40,7 +43,9 @@ const EditValue = ({ opened, type, close, workoutId, exerciseId, ...props }: Pro
         setOpened={close}
         title="Time: "
         onConfirm={(m, s) => {
-          props.editExercise(workoutId, exerciseId, { value: fromTimer(m, s) });
+          const updated = { value: fromTimer(m, s) };
+          props.editExercise(workoutId, exerciseId, updated);
+          props.updateLocalExercise(exerciseId, updated);
         }}
       />
     );

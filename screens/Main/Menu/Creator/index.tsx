@@ -65,6 +65,7 @@ const Creator = ({ workout, ...props }: Props) => {
               navigation.goBack();
             }}
           />
+          <AntDesign name="edit" style={styles.editIcon} />
           <TextInput
             value={name}
             style={styles.textInput}
@@ -75,7 +76,6 @@ const Creator = ({ workout, ...props }: Props) => {
               props.saveNameWorkout(id, name);
             }}
           />
-          <AntDesign name="edit" style={styles.editIcon} />
         </View>
         <View
           style={{
@@ -99,7 +99,7 @@ const Creator = ({ workout, ...props }: Props) => {
       <DraggableList
         data={exercises}
         editTransition={editListOpenedTransition}
-        {...{ id, editListOpened }}
+        {...{ id, editListOpened, addButtonOffset }}
         openEditList={(open) => setEditListOpened(open)}
       />
       <HideIcon
@@ -107,13 +107,6 @@ const Creator = ({ workout, ...props }: Props) => {
           setEditListOpened(false);
         }}
         transitionValue={editListOpenedTransition}
-      />
-
-      <AddButton
-        style={{ transform: [{ translateY: addButtonOffset }] }}
-        onPress={() => {
-          props.addExercise(id, { name: 'New exercise', type: 'reps', value: 0 });
-        }}
       />
 
       <Settings

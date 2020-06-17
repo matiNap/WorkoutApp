@@ -1,5 +1,5 @@
 import React, { ReactNode, CSSProperties, useState } from 'react';
-import { StyleSheet, BackHandler, View } from 'react-native';
+import { StyleSheet, BackHandler, View, KeyboardAvoidingView } from 'react-native';
 import metrics from '_metrics';
 import { useSpringTransition } from 'react-native-redash';
 import Animated, { interpolate } from 'react-native-reanimated';
@@ -74,40 +74,42 @@ const Overlay = ({
       }}
       {...{ pointerEvents }}
     >
-      <Animated.View
-        style={[
-          {
-            top: -top,
-            left: -left,
-            opacity: opacity,
-          },
-          styles.background,
-        ]}
-        {...{ pointerEvents }}
-      >
+      <KeyboardAvoidingView behavior="position">
         <Animated.View
           style={[
-            styles.container,
             {
-              width: destWidth,
-              height: destHeight,
-              opacity: transitionValue,
-              transform: [{ scale }],
-              ...style,
-              top: posY,
-              left: posX,
+              top: -top,
+              left: -left,
+              opacity: opacity,
             },
+            styles.background,
           ]}
-          onLayout={({ nativeEvent }) => {
-            const { width, height } = nativeEvent.layout;
-            setWidth(width);
-            setHeight(height);
-          }}
           {...{ pointerEvents }}
         >
-          {opened ? children : null}
+          <Animated.View
+            style={[
+              styles.container,
+              {
+                width: destWidth,
+                height: destHeight,
+                opacity: transitionValue,
+                transform: [{ scale }],
+                ...style,
+                top: posY,
+                left: posX,
+              },
+            ]}
+            onLayout={({ nativeEvent }) => {
+              const { width, height } = nativeEvent.layout;
+              setWidth(width);
+              setHeight(height);
+            }}
+            {...{ pointerEvents }}
+          >
+            {opened ? children : null}
+          </Animated.View>
         </Animated.View>
-      </Animated.View>
+      </KeyboardAvoidingView>
     </View>
   );
 };

@@ -1,101 +1,102 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { exerciseType } from '_types';
 import { Text } from 'react-native-elements';
 import palette from '_palette';
 import metrics from '_metrics';
-import Animated, { useCode, Easing, interpolate, Extrapolate, call } from 'react-native-reanimated';
-import { State, TouchableWithoutFeedback } from 'react-native-gesture-handler';
-import { onGestureEvent, timing, approximates } from 'react-native-redash';
+import Animated, { useCode, interpolate, Extrapolate, call, block } from 'react-native-reanimated';
+import { State, TouchableWithoutFeedback, PanGestureHandler } from 'react-native-gesture-handler';
+import { onGestureEvent, approximates, useSpringTransition } from 'react-native-redash';
 import { timerToString } from '_helpers';
 import { connect } from 'react-redux';
-import { deleteExercise } from '_actions/creators/workout';
+import { deleteExercise, reorderExercises, editExercise } from '_actions/creators/workout';
 import Switch from '_components/Switch';
 import typography from '_typography';
-import { editExercise } from '_actions/creators/workout';
 import { AntDesign, MaterialIcons } from '@expo/vector-icons';
+import { exercise } from '_types';
 
-const { cond, set, add, eq, floor, multiply, divide } = Animated;
+const { cond, set, add, eq, floor, multiply, divide, debug, max, and } = Animated;
 
 interface Props {
   title: string;
   value: string | number;
   listLength: number;
   type: exerciseType;
-  translateY: Animated.Node<number>;
-  index: number;
-  values: Animated.Node<number>[];
+  currentOffset: Animated.Value<number>;
+  myIndex: number;
+  offsets: Animated.Value<number>[];
   onPressValue: () => void;
   onPressName: () => void;
   workout_id: string;
   deleteExercise: typeof deleteExercise;
   editExercise: typeof editExercise;
+  reorderExercises: typeof reorderExercises;
   id: string;
   setPosition: (position: position, index: number) => void;
   editListOpened: boolean;
   editTransition: Animated.Value<number>;
+  onLongPress: () => void;
+  deleteLocalExercise: (index: number) => void;
+  updateLocalExercise: (index: number, update: exercise) => void;
 }
 
-const ITEM_HEIGHT = metrics.height * 0.2;
 const ITEM_WIDTH = metrics.width * 0.95;
-const BORDER_RADIUS = ITEM_HEIGHT * 0.2;
+const ITEM_HEIGHT = metrics.excItemHeight;
+const BORDER_RADIUS = metrics.excItemHeight * 0.2;
+
+const withSnap = ({
+  value,
+  offset,
+  state,
+}: {
+  value: Animated.Value<number>;
+  offset: Animated.Value<number>;
+  state: Animated.Value<number>;
+}) => {
+  const safeOffset = new Animated.Value(0);
+  return block([
+    cond(eq(state, State.ACTIVE), add(safeOffset, value), [set(safeOffset, offset), safeOffset]),
+  ]);
+};
 
 const ExcItem = ({
   title,
   type,
   value,
-  translateY,
+  currentOffset,
   listLength,
-  index,
-  values,
+  myIndex,
+  offsets,
   workout_id,
   id,
   onPressName,
   onPressValue,
   editListOpened,
   editTransition,
+  onLongPress,
   ...props
 }: Props) => {
-  const absoluteY = new Animated.Value(0);
-  const currentIndex = new Animated.Value(index);
-  const state = new Animated.Value(State.UNDETERMINED);
-  const translationY = new Animated.Value(0);
-  const to = new Animated.Value(0);
-  const gestureHandler = onGestureEvent({
-    absoluteY,
-    state,
-    translationY,
-  });
-  useCode(
-    () => [
-      cond(
-        eq(state, State.ACTIVE),
-        [set(translateY, add(multiply(currentIndex, ITEM_HEIGHT), translationY))],
-        cond(eq(state, State.END), [
-          set(
-            to,
-            add(
-              multiply(currentIndex, ITEM_HEIGHT),
+  const { state, gestureHandler, zIndex, translationY } = useMemo(() => {
+    const state = new Animated.Value(State.UNDETERMINED);
+    const zIndex = cond(eq(state, State.ACTIVE), 10, 1);
+    const translationY = new Animated.Value(0);
 
-              multiply(ITEM_HEIGHT, floor(divide(translationY, ITEM_HEIGHT))),
-            ),
-          ),
-          set(
-            translateY,
-            timing({
-              to,
-              from: translateY,
-              easing: Easing.inOut(Easing.ease),
-            }),
-          ),
-          cond(approximates(translateY, to), [
-            set(currentIndex, add(currentIndex, floor(divide(translationY, ITEM_HEIGHT)))),
-          ]),
-        ]),
-      ),
-    ],
-    [],
-  );
+    const gestureHandler = onGestureEvent({
+      state,
+      translationY,
+    });
+
+    return {
+      state,
+      translationY,
+      gestureHandler,
+      zIndex,
+    };
+  }, []);
+
+  const y = withSnap({ value: translationY, offset: currentOffset, state });
+  const offsetY = multiply(max(floor(divide(y, ITEM_HEIGHT)), 0), ITEM_HEIGHT);
+
   const editWidth = interpolate(editTransition, {
     inputRange: [0, 1],
     outputRange: [40, 0],
@@ -107,121 +108,148 @@ const ExcItem = ({
     extrapolate: Extrapolate.CLAMP,
   });
   const [animationEnded, setAnimationEnded] = useState(true);
+  const translateY = useSpringTransition(y, {});
   useCode(
     () =>
-      cond(
-        approximates(editTransition, 0),
-        call([], () => {
-          setAnimationEnded(true);
-        }),
-        call([], () => {
-          setAnimationEnded(false);
-        }),
-      ),
-    [],
+      block([
+        offsets.map((offset, index) => [
+          cond(and(eq(offset, offsetY), eq(state, State.ACTIVE)), [
+            set(offset, currentOffset),
+            set(currentOffset, offsetY),
+            call([], () => {
+              props.reorderExercises(index, myIndex, workout_id);
+            }),
+          ]),
+        ]),
+        cond(
+          approximates(editTransition, 0),
+          call([], () => {
+            setAnimationEnded(true);
+          }),
+          call([], () => {
+            setAnimationEnded(false);
+          }),
+        ),
+      ]),
+    [currentOffset, offsetY, offsets, state],
   );
-
   return (
-    <View style={styles.mainContainer}>
-      <View style={styles.container}>
-        <View
-          style={styles.header}
-          ref={(ref) => {
-            //Set x and y for edit overlay transition
-            ref?.measure((fx, fy, width, height, px, py) => {
-              props.setPosition({ x: px, y: py }, index);
-            });
-          }}
-        >
-          <TouchableWithoutFeedback
-            onPress={() => {
-              if (!editListOpened) onPressName();
-            }}
-            style={{ flexDirection: 'row' }}
-          >
-            <Animated.View style={{ width: editWidth }}>
-              <AntDesign name="edit" style={styles.editIcon} />
-            </Animated.View>
-            <Text style={[styles.text]}>{title}</Text>
-          </TouchableWithoutFeedback>
-
-          <Switch
-            style={{ opacity: reversedTransition, scale: reversedTransition }}
-            initValue={type === 'time'}
-            left="Reps"
-            right="Time"
-            onChange={(newValue) => {
-              if (animationEnded) {
-                const type = newValue === 'Reps' ? 'reps' : 'time';
-                props.editExercise(workout_id, id, {
-                  type,
+    <Animated.View style={[styles.swapContainer, { zIndex, transform: [{ translateY }] }]}>
+      <View>
+        <TouchableWithoutFeedback style={styles.container} {...{ onLongPress }}>
+          <View style={{ flex: 1 }}>
+            <View
+              style={styles.header}
+              ref={(ref) => {
+                //Set x and y for edit overlay transition
+                ref?.measure((fx, fy, width, height, px, py) => {
+                  props.setPosition({ x: px, y: py }, myIndex);
                 });
-              }
-            }}
-          />
-        </View>
-
-        <Animated.View
-          style={[
-            styles.content,
-            { opacity: reversedTransition, transform: [{ scale: reversedTransition }] },
-          ]}
-        >
-          <TouchableWithoutFeedback
-            onPress={() => {
-              if (!editListOpened) onPressValue();
-            }}
-          >
-            {type === 'reps' ? (
-              <Text style={styles.subText}>{`x${value}`}</Text>
-            ) : (
-              <Text style={styles.subText}>{timerToString(value)}</Text>
-            )}
-          </TouchableWithoutFeedback>
-        </Animated.View>
-
-        <Animated.View
-          style={[
-            styles.editListContent,
-            { opacity: editTransition, transform: [{ scale: editTransition }] },
-          ]}
-        >
-          <View style={{ flexGrow: 2, justifyContent: 'center' }}>
-            <MaterialIcons
-              name="delete"
-              style={styles.deleteIcon}
-              onPress={() => {
-                if (!animationEnded) props.deleteExercise(workout_id, id);
               }}
-            />
+            >
+              <TouchableWithoutFeedback
+                onPress={() => {
+                  if (!editListOpened) onPressName();
+                }}
+                style={{ flexDirection: 'row' }}
+              >
+                <Animated.View style={{ width: editWidth }}>
+                  <AntDesign name="edit" style={styles.editIcon} />
+                </Animated.View>
+                <Text style={[styles.text]}>{title}</Text>
+              </TouchableWithoutFeedback>
+
+              <Switch
+                style={{ opacity: reversedTransition, scale: reversedTransition }}
+                initValue={type === 'time'}
+                left="Reps"
+                right="Time"
+                onChange={(newValue) => {
+                  if (animationEnded) {
+                    const type = newValue === 'Reps' ? 'reps' : 'time';
+                    props.updateLocalExercise(myIndex, { type });
+                    props.editExercise(workout_id, id, {
+                      type,
+                    });
+                  }
+                }}
+              />
+            </View>
+
+            <Animated.View
+              style={[
+                styles.content,
+                { opacity: reversedTransition, transform: [{ scale: reversedTransition }] },
+              ]}
+            >
+              <TouchableWithoutFeedback
+                onPress={() => {
+                  if (!editListOpened) onPressValue();
+                }}
+              >
+                {type === 'reps' ? (
+                  <Text style={styles.subText}>{`x${value}`}</Text>
+                ) : (
+                  <Text style={styles.subText}>{timerToString(value)}</Text>
+                )}
+              </TouchableWithoutFeedback>
+            </Animated.View>
+
+            <Animated.View
+              style={[
+                styles.editListContent,
+                { opacity: editTransition, transform: [{ scale: editTransition }] },
+              ]}
+            >
+              <View style={{ flexGrow: 2, justifyContent: 'center' }}>
+                <MaterialIcons
+                  name="delete"
+                  style={styles.deleteIcon}
+                  onPress={() => {
+                    if (!animationEnded) {
+                      props.deleteLocalExercise(myIndex);
+                      props.deleteExercise(workout_id, id);
+                    }
+                  }}
+                />
+              </View>
+              <View
+                style={{
+                  height: 60,
+                  width: 4,
+                  borderRadius: 2,
+                  backgroundColor: palette.text.gray,
+                  alignSelf: 'center',
+                  marginRight: 20,
+                }}
+              />
+              <PanGestureHandler {...gestureHandler}>
+                <Animated.View>
+                  <MaterialIcons name="drag-handle" style={styles.icon} />
+                </Animated.View>
+              </PanGestureHandler>
+            </Animated.View>
           </View>
-          <View
-            style={{
-              height: 60,
-              width: 4,
-              borderRadius: 2,
-              backgroundColor: palette.text.gray,
-              alignSelf: 'center',
-              marginRight: 20,
-            }}
-          />
-          <MaterialIcons name="drag-handle" style={styles.icon} />
-        </Animated.View>
+        </TouchableWithoutFeedback>
       </View>
-    </View>
+    </Animated.View>
   );
 };
 
-export default connect(null, { deleteExercise, editExercise })(ExcItem);
+export default connect(null, { deleteExercise, editExercise, reorderExercises })(ExcItem);
 
 const styles = StyleSheet.create({
-  mainContainer: {
+  swapContainer: {
     zIndex: 100,
     width: ITEM_WIDTH,
+    height: ITEM_HEIGHT,
     alignSelf: 'center',
+    position: 'absolute',
+    top: 0,
+    left: 10,
   },
   container: {
-    height: ITEM_HEIGHT,
+    height: ITEM_HEIGHT * 0.9,
     width: ITEM_WIDTH,
     alignSelf: 'center',
     paddingVertical: 10,

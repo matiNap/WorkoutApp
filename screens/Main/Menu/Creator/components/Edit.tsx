@@ -21,6 +21,7 @@ interface Props {
   name: string;
   workoutId: string;
   editExercise: typeof editExercise;
+  updateLocalExercise: (index: number | string, update: exercise) => void;
 }
 
 class Edit extends React.Component<Props> {
@@ -37,7 +38,9 @@ class Edit extends React.Component<Props> {
   onConfirm = () => {
     const { workoutId, exerciseId } = this.props;
     const { inputValue } = this.state;
-    this.props.editExercise(workoutId, exerciseId, { name: inputValue });
+    const updated = { name: inputValue };
+    this.props.editExercise(workoutId, exerciseId, updated);
+    this.props.updateLocalExercise(exerciseId, updated);
   };
 
   render() {
