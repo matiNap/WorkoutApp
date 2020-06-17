@@ -33,7 +33,7 @@ const TabNav = () => {
 
         style: {
           backgroundColor: palette.secondaryDark,
-          height: metrics.height * 0.08,
+          height: metrics.windowHeight * 0.08,
           borderTopWidth: 0,
         },
       }}

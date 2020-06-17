@@ -15,13 +15,14 @@ class StartScreen extends React.Component<Props, State> {
     time: 1,
   };
   timer: NodeJS.Timeout;
-  componentDidUpdate() {
+  componentDidMount() {
     this.timer = setInterval(() => {
       this.setState((prevState) => {
         if (prevState.time === 3) {
           clearInterval(this.timer);
           this.props.endStart();
         }
+
         return {
           time: prevState.time + 1,
         };
@@ -36,7 +37,7 @@ class StartScreen extends React.Component<Props, State> {
   render() {
     return (
       <View style={[StyleSheet.absoluteFill, styles.container]}>
-        <Text style={styles.counter}>{this.state.time}</Text>
+        <Text style={styles.counter}>{this.state.time === 4 ? 3 : this.state.time}</Text>
       </View>
     );
   }

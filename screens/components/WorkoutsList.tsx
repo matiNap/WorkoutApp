@@ -20,10 +20,9 @@ interface Props {
 
 const WorkoutsList = ({ setEditOpened, editOpened, transitionValue, workouts, onPress }: Props) => {
   return (
-    <View style={{ flex: 1 }}>
-      <Text style={styles.title}>Workouts: </Text>
+    <View style={styles.container}>
       {workouts && workouts.length !== 0 ? (
-        <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
+        <ScrollView showsVerticalScrollIndicator={false}>
           {workouts &&
             workouts.map((workout) => (
               <TouchableWithoutFeedback
@@ -69,9 +68,8 @@ const mapStateToProps = (state: RootState) => {
 export default connect(mapStateToProps)(WorkoutsList);
 
 const styles = StyleSheet.create({
-  list: {
-    marginTop: 10,
-  },
+  container: { flex: 1, paddingHorizontal: 15 },
+
   title: {
     fontSize: 25,
     fontWeight: 'bold',

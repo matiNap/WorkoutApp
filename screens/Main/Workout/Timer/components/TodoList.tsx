@@ -41,13 +41,14 @@ const renderNextState = (exercises: todo[], currentIndex: number, nextEnded: boo
 
 const ALinearGradient = Animated.createAnimatedComponent(LinearGradient);
 
-const ITEM_HEIGHT = metrics.height * 0.05;
-const HEADER_HEIGHT = metrics.height * 0.1;
+const ITEM_HEIGHT = metrics.height * 0.12;
+const HEADER_HEIGHT = metrics.height * 0.14;
+const LINEAR_MIN_HEIGHT = HEADER_HEIGHT * 1.2;
 
 const TodoList = ({ exercises, currentIndex }: Props) => {
-  const height = metrics.height * 0.7;
-  const offsetTarget = -height + HEADER_HEIGHT;
-  const LINEAR_MIN_HEIGHT = metrics.height * 0.15;
+  const minHeight = metrics.height * 0.7;
+  const offsetTarget = -minHeight + HEADER_HEIGHT;
+
   const nextEnded = exercises.length - 1 === currentIndex;
   const { offsetY, gestureHandler, translateY, state, linearHeight } = useMemo(() => {
     const offsetY = new Animated.Value(0);
@@ -94,7 +95,7 @@ const TodoList = ({ exercises, currentIndex }: Props) => {
       cond(
         eq(state, State.ACTIVE),
         cond(
-          greaterOrEq(offsetY, -height / 2),
+          greaterOrEq(offsetY, -minHeight / 2),
           [
             set(
               offsetY,
@@ -131,7 +132,9 @@ const TodoList = ({ exercises, currentIndex }: Props) => {
         }}
       />
       <PanGestureHandler {...gestureHandler}>
-        <Animated.View style={[styles.container, { height, transform: [{ translateY: offsetY }] }]}>
+        <Animated.View
+          style={[styles.container, { minHeight, transform: [{ translateY: offsetY }] }]}
+        >
           <Animated.View style={[styles.header]}>
             <View style={styles.swipeBar}></View>
             {exercises.length !== 0 && (
@@ -180,7 +183,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
     width: metrics.width,
     position: 'absolute',
-    top: metrics.height - 2 * HEADER_HEIGHT,
+    top: metrics.height - HEADER_HEIGHT,
   },
   background: {
     // backgroundColor: 'rgba(0,0,0,0.5)',
@@ -199,7 +202,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: palette.secondary,
     paddingHorizontal: 5,
-
     height: HEADER_HEIGHT,
   },
   headerText: {
