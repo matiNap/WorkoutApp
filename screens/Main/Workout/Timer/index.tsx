@@ -74,9 +74,21 @@ class Timer extends React.Component<Props, State> {
   alarm = new Audio.Sound();
 
   async componentDidMount() {
-    const { type, exercises, loop, exerciseBreak, typeBreak } = this.props.workout;
+    const { type, exercises, loop, exerciseBreak, typeBreak, time } = this.props.workout;
 
     const todoList = createExerciseTodoList(type, exercises, loop, exerciseBreak, typeBreak);
+
+    this.timer = setInterval(async () => {
+      const { currentTime, stopped, ended, exitOpened } = this.state;
+
+      if (!stopped && !ended && !exitOpened) {
+        this.updateTimer();
+      }
+      if (type === 'intervals' && time === currentTime + 1) {
+        this.setState({ ended: true });
+        clearInterval(this.timer);
+      }
+    }, 1000);
 
     if (todoList.length !== 0) {
       this.setState((prevState) => {
@@ -97,23 +109,6 @@ class Timer extends React.Component<Props, State> {
       await this.alarm.setVolumeAsync(0.1);
     } catch (error) {
       console.log(error.message);
-    }
-  }
-
-  componentDidUpdate(_, prevState: State) {
-    const { type, time } = this.props.workout;
-    if (prevState.start !== this.state.start) {
-      this.timer = setInterval(async () => {
-        const { currentTime, stopped, ended, exitOpened } = this.state;
-
-        if (!stopped && !ended && !exitOpened) {
-          this.updateTimer();
-        }
-        if (type === 'intervals' && time === currentTime + 1) {
-          this.setState({ ended: true });
-          clearInterval(this.timer);
-        }
-      }, 1000);
     }
   }
 
@@ -185,7 +180,7 @@ class Timer extends React.Component<Props, State> {
     const { workout } = this.props;
     const { ended, currentLoop, target, currentWorkoutTime } = this.state;
     const { type: targetType, currentTodo } = target;
-    const { loop, type: workoutType, time: workoutTime } = workout;
+    const { loop, type: workoutType } = workout;
 
     if (ended) {
       return (
@@ -196,14 +191,13 @@ class Timer extends React.Component<Props, State> {
     } else {
       return (
         <View>
-          {targetType !== 'reps' ||
-            (workoutTime !== -1 && (
-              <View style={styles.arcProgress}>
-                <ArcProgress
-                  progress={new Animated.Value(1 - -currentWorkoutTime / currentTodo.value)}
-                />
-              </View>
-            ))}
+          {targetType !== 'reps' && (
+            <View style={styles.arcProgress}>
+              <ArcProgress
+                progress={new Animated.Value(1 - -currentWorkoutTime / currentTodo.value)}
+              />
+            </View>
+          )}
           <View style={styles.currentTime}>
             {targetType !== 'reps' ? (
               <TouchableWithoutFeedback
@@ -237,16 +231,8 @@ class Timer extends React.Component<Props, State> {
     const { currentTime, target, todoList, exitOpened, start } = this.state;
     const { workout, navigation } = this.props;
     const { type: workoutType, time } = workout;
-    const { goBack } = navigation;
-    if (start) {
-      return (
-        <StartScreen
-          endStart={() => {
-            this.setState({ start: false });
-          }}
-        />
-      );
-    }
+    const { navigate } = navigation;
+
     return (
       <View style={styles.container}>
         <Header
@@ -275,7 +261,7 @@ class Timer extends React.Component<Props, State> {
             }}
             onCancel={() => this.setState({ exitOpened: false })}
             onConfirm={() => {
-              goBack();
+              navigate('Start');
             }}
           />
         </Overlay>
