@@ -14,6 +14,8 @@ import { addExercise } from '_actions/creators/workout';
 import { connect } from 'react-redux';
 import _ from 'lodash';
 import uid from 'uid';
+import palette from '_palette';
+import { Text } from 'react-native-elements';
 
 interface Props {
   data: exercise[];
@@ -125,48 +127,52 @@ class DraggableList extends React.Component<Props, State> {
 
     return (
       <View style={{ flex: 1 }}>
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={[styles.listContainer, { height: listHeight }]}
-        >
-          {this.data.map((item, index) => {
-            const { value, type, name } = item;
-            const id = item.id ? item.id : `${index}exc`;
-            return (
-              <ExcItem
-                key={id}
-                onLongPress={this.openEditList}
-                {...{
-                  currentOffset: this.offsets[index],
-                  myIndex: index,
-                  editListOpened,
-                  id,
-                  title: name,
-                  type,
-                  value,
-                  workout_id,
-                  editTransition,
-                }}
-                onPressName={() => {
-                  this.setState({
-                    selectedId: item.id,
-                    selectedIndex: index,
-                  });
-                }}
-                onPressValue={() => {
-                  this.setState({
-                    selectedValueId: item.id,
-                  });
-                }}
-                listLength={data.length}
-                offsets={this.offsets}
-                setPosition={this.setPosition}
-                deleteLocalExercise={this.removeExercise}
-                updateLocalExercise={this.editExercise}
-              />
-            );
-          })}
-        </ScrollView>
+        {this.data.length !== 0 ? (
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={[styles.listContainer, { height: listHeight }]}
+          >
+            {this.data.map((item, index) => {
+              const { value, type, name } = item;
+              const id = item.id ? item.id : `${index}exc`;
+              return (
+                <ExcItem
+                  key={id}
+                  onLongPress={this.openEditList}
+                  {...{
+                    currentOffset: this.offsets[index],
+                    myIndex: index,
+                    editListOpened,
+                    id,
+                    title: name,
+                    type,
+                    value,
+                    workout_id,
+                    editTransition,
+                  }}
+                  onPressName={() => {
+                    this.setState({
+                      selectedId: item.id,
+                      selectedIndex: index,
+                    });
+                  }}
+                  onPressValue={() => {
+                    this.setState({
+                      selectedValueId: item.id,
+                    });
+                  }}
+                  listLength={data.length}
+                  offsets={this.offsets}
+                  setPosition={this.setPosition}
+                  deleteLocalExercise={this.removeExercise}
+                  updateLocalExercise={this.editExercise}
+                />
+              );
+            })}
+          </ScrollView>
+        ) : (
+          <Text style={styles.placeholder}>Add exercise</Text>
+        )}
         <EditValue
           opened={editValueOpened}
           close={this.closeEditValue}
@@ -196,5 +202,11 @@ export default connect(null, { addExercise })(DraggableList);
 const styles = StyleSheet.create({
   listContainer: {
     paddingBottom: metrics.addButtonHeight + 20,
+  },
+  placeholder: {
+    color: palette.text.gray,
+    position: 'absolute',
+    alignSelf: 'center',
+    top: metrics.height / 3,
   },
 });

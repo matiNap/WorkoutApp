@@ -78,8 +78,8 @@ const Overlay = ({
       <Animated.View
         style={[
           {
-            top: -top,
-            left: -left,
+            top: top ? -top : 0,
+            left: left ? -left : 0,
             opacity: opacity,
           },
           styles.background,
