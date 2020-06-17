@@ -2,7 +2,6 @@ import React from 'react';
 import { StyleSheet, View, BackHandler } from 'react-native';
 import { Text } from 'react-native-elements';
 import Roll from './Roll';
-import metrics from '_metrics';
 import ExitButtons from '_components/ExitButtons';
 import Overlay from '_components/Overlay';
 import { createRange } from '_helpers';
