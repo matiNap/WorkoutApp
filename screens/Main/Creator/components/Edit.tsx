@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, Keyboard } from 'react-native';
 import { Text } from 'react-native-elements';
 import Overlay from '_components/Overlay';
 import ExitButtons from '_components/ExitButtons';
@@ -12,6 +12,8 @@ import { connect } from 'react-redux';
 import { RootState } from '_rootReducer';
 import _ from 'lodash';
 import metrics from '_metrics';
+import { useSpringTransition, withSpringTransition } from 'react-native-redash';
+import { interpolate } from 'react-native-reanimated';
 
 interface Props {
   opened: boolean;

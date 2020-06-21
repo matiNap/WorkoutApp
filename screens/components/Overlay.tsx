@@ -1,4 +1,4 @@
-import React, { ReactNode, CSSProperties, useState } from 'react';
+import React, { ReactNode, CSSProperties, useState, useEffect } from 'react';
 import { StyleSheet, BackHandler, View, Keyboard } from 'react-native';
 import metrics from '_metrics';
 import { useSpringTransition } from 'react-native-redash';
@@ -19,7 +19,7 @@ interface Props {
 const WIDTH = metrics.width * 0.8;
 const HEIGHT = metrics.height * 0.4;
 
-const { useCode, cond, call, greaterOrEq } = Animated;
+const { add } = Animated;
 
 const Overlay = ({
   style,
@@ -31,12 +31,32 @@ const Overlay = ({
   height: destHeight = HEIGHT,
   width: destWidth = WIDTH,
 }: Props) => {
-  BackHandler.addEventListener('hardwareBackPress', () => {
-    if (opened) {
-      close();
-      return true;
-    }
-  });
+  const [keyboardOpened, seyKeyboardOpened] = useState(false);
+  const [backhandler, setBackHandler] = useState(null);
+  const keyboardDidShow = () => {
+    seyKeyboardOpened(true);
+  };
+  const keyboardDidHide = () => {
+    seyKeyboardOpened(false);
+  };
+
+  useEffect(() => {
+    Keyboard.addListener('keyboardDidShow', keyboardDidShow);
+    Keyboard.addListener('keyboardDidHide', keyboardDidHide);
+    setBackHandler(
+      BackHandler.addEventListener('hardwareBackPress', () => {
+        if (opened) {
+          close();
+          return true;
+        }
+      }),
+    );
+    return () => {
+      Keyboard.removeListener('keyboardDidShow', keyboardDidShow);
+      Keyboard.removeListener('keyboardDidHide', keyboardDidHide);
+      BackHandler.removeEventListener('hardwareBackPress', backhandler);
+    };
+  }, []);
 
   const [top, setTop] = useState(0);
   const [left, setLeft] = useState(0);
@@ -63,7 +83,11 @@ const Overlay = ({
     outputRange: [0, 0.6, 1],
   });
   const pointerEvents = 'box-none';
-
+  const overlayTransition = useSpringTransition(keyboardOpened, {});
+  const overlayTopOffset = interpolate(overlayTransition, {
+    inputRange: [0, 1],
+    outputRange: [0, -metrics.height / 4],
+  });
   return (
     <View
       style={styles.main}
@@ -95,7 +119,7 @@ const Overlay = ({
               opacity: transitionValue,
               transform: [{ scale }],
               ...style,
-              top: posY,
+              top: add(posY, overlayTopOffset),
               left: posX,
             },
           ]}
