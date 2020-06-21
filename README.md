@@ -4,8 +4,8 @@ Application uses React Native and Sqlite
 
 ![](edit.gif)
 
-![alt text](edit.png)
+![alt text](edit.jpg)
 
-![alt text](timer.png)
+![alt text](timer.jpg)
 
-![alt text](workouts.png)
+![alt text](workouts.jpg)
