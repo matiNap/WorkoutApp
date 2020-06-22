@@ -99,7 +99,9 @@ class DraggableList extends React.Component<Props, State> {
     this.data = _.remove(this.data, (_, index) => {
       return index !== removedIndex;
     });
-    this.offsets = this.data.map((_, index) => new Animated.Value(index * metrics.excItemHeight));
+    this.offsets = this.props.data.map(
+      (_, index) => new Animated.Value(index * metrics.excItemHeight),
+    );
   };
 
   editExercise = (editIndex: number | string, update: exercise) => {
@@ -124,7 +126,6 @@ class DraggableList extends React.Component<Props, State> {
     const editValueOpened = selectedValueId ? true : false;
     const listHeight =
       10 + this.offsets.length * metrics.excItemHeight + metrics.addButtonHeight + 20;
-
     return (
       <View style={{ flex: 1 }}>
         {this.data.length !== 0 ? (
@@ -166,6 +167,7 @@ class DraggableList extends React.Component<Props, State> {
                   setPosition={this.setPosition}
                   deleteLocalExercise={this.removeExercise}
                   updateLocalExercise={this.editExercise}
+                  otherItems={this.data}
                 />
               );
             })}

@@ -18,7 +18,6 @@ const ADD_SIZE = metrics.width * 0.17;
 const ADD_X_POS = 30;
 
 const AddWorkout = ({ transitionValue, ...props }: Props) => {
-  const navigation = useNavigation();
   const addOffsetX = interpolate(transitionValue, {
     inputRange: [0, 1],
     outputRange: [0, ADD_SIZE + ADD_X_POS],
@@ -28,7 +27,6 @@ const AddWorkout = ({ transitionValue, ...props }: Props) => {
       <TouchableWithoutFeedback
         onPress={() => {
           props.createWorkout();
-          navigation.navigate('Creator', { add: true });
         }}
       >
         <MaterialIcons name="add" style={styles.addIcon} />

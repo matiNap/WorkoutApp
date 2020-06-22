@@ -121,13 +121,6 @@ const Creator = ({ workout, ...props }: Props) => {
 const mapStateToProps = (state: RootState, ownProps: Props) => {
   const { add } = ownProps.route.params;
   const { workouts } = state;
-  if (add) {
-    const workout = workouts[workouts.length - 1];
-
-    return {
-      workout: workout ? workout : { type: null, exercises: [], name: 'Workout name' },
-    };
-  }
 
   const { id } = ownProps.route.params;
 

@@ -14,6 +14,7 @@ import Switch from '_components/Switch';
 import typography from '_typography';
 import { AntDesign, MaterialIcons } from '@expo/vector-icons';
 import { exercise } from '_types';
+import reactotron from 'reactotronConfig';
 
 const { cond, set, add, eq, floor, multiply, divide, debug, max, and } = Animated;
 
@@ -38,6 +39,7 @@ interface Props {
   onLongPress: () => void;
   deleteLocalExercise: (index: number) => void;
   updateLocalExercise: (index: number, update: exercise) => void;
+  otherItems: exercise[];
 }
 
 const ITEM_WIDTH = metrics.width * 0.95;
@@ -54,9 +56,7 @@ const withSnap = ({
   state: Animated.Value<number>;
 }) => {
   const safeOffset = new Animated.Value(0);
-  return block([
-    cond(eq(state, State.ACTIVE), add(safeOffset, value), [set(safeOffset, offset), safeOffset]),
-  ]);
+  return block([cond(eq(state, State.ACTIVE), add(safeOffset, value), set(safeOffset, offset))]);
 };
 
 const ExcItem = ({
@@ -74,6 +74,7 @@ const ExcItem = ({
   editListOpened,
   editTransition,
   onLongPress,
+  otherItems,
   ...props
 }: Props) => {
   const { state, gestureHandler, zIndex, translationY } = useMemo(() => {
@@ -94,8 +95,8 @@ const ExcItem = ({
     };
   }, []);
 
-  const y = withSnap({ value: translationY, offset: currentOffset, state });
-  const offsetY = multiply(max(floor(divide(y, ITEM_HEIGHT)), 0), ITEM_HEIGHT);
+  const y = max(withSnap({ value: translationY, offset: currentOffset, state }), 0);
+  const offsetY = multiply(floor(divide(y, ITEM_HEIGHT)), ITEM_HEIGHT);
 
   const editWidth = interpolate(editTransition, {
     inputRange: [0, 1],
@@ -114,11 +115,12 @@ const ExcItem = ({
       block([
         offsets.map((offset, index) => [
           cond(and(eq(offset, offsetY), eq(state, State.ACTIVE)), [
+            call([], () => {
+              if (index !== myIndex)
+                props.reorderExercises(otherItems[index].id, otherItems[myIndex].id, workout_id);
+            }),
             set(offset, currentOffset),
             set(currentOffset, offsetY),
-            call([], () => {
-              props.reorderExercises(index, myIndex, workout_id);
-            }),
           ]),
         ]),
         cond(

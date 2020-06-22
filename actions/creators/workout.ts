@@ -215,7 +215,7 @@ export const editExercise = (workoutId: string, exerciseId: string, excUpdate: e
   updateTime(workoutId)(dispatch, getState);
 };
 
-export const reorderExercises = (a: number, b: number, workoutId: string) => async (
+export const reorderExercises = (a: string, b: string, workoutId: string) => async (
   dispatch,
   getState,
 ) => {
@@ -223,11 +223,13 @@ export const reorderExercises = (a: number, b: number, workoutId: string) => asy
   const { workouts } = state;
 
   const { exercises } = workouts[_.findIndex(workouts, (workout) => workout.id === workoutId)];
-  const exerciseA = exercises[a];
-  const exerciseB = exercises[b];
+  const indexA = _.findIndex(exercises, (exercise: exercise) => exercise.id === a);
+  const indexB = _.findIndex(exercises, (exercise: exercise) => exercise.id === b);
+  const exerciseA = exercises[indexA];
+  const exerciseB = exercises[indexB];
 
-  exercises[a] = exerciseB;
-  exercises[b] = exerciseA;
+  exercises[indexA] = exerciseB;
+  exercises[indexB] = exerciseA;
 
   saveExercises(workoutId, exercises);
 
@@ -243,7 +245,6 @@ export const reorderExercises = (a: number, b: number, workoutId: string) => asy
 };
 
 const updateTime = (workoutId: string) => (dispatch, getState: () => RootState) => {
-  reactotron.log('Update time');
   let time = -1;
   const { workouts } = getState();
   const currentWorkout: workout = workouts[_.findIndex(workouts, ({ id }) => id === workoutId)];
