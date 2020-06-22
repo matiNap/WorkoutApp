@@ -10,9 +10,11 @@ import Animated from 'react-native-reanimated';
 import { connect } from 'react-redux';
 import { deleteWorkout } from '_actions/creators/workout';
 import { timerToString } from '_helpers';
+import metrics from '_metrics';
+import { useSpringTransition } from 'react-native-redash';
+import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 
 interface Props {
-  divider: boolean;
   title: string;
   time: number;
   type: workoutType;
@@ -22,10 +24,14 @@ interface Props {
   transitionValue?: Animated.Node<number>;
   deleteWorkout: typeof deleteWorkout;
   length: number;
+  index: number;
+  onPress: (id: string) => void;
+  setEditOpened: (opened: boolean) => void;
 }
 
+const ITEM_HEIGHT = metrics.height * 0.08;
+
 const WorkoutItem = ({
-  divider,
   title,
   time,
   type,
@@ -34,45 +40,52 @@ const WorkoutItem = ({
   closeEdit,
   transitionValue,
   length,
+  index,
   ...props
 }: Props) => {
+  const translateY = useSpringTransition(index * ITEM_HEIGHT, {});
   return (
-    <View>
-      <View style={styles.infoContainer}>
-        <Text style={styles.title}>{title}</Text>
-        {editOpened && (
-          <Animated.View
-            style={{
-              transform: [{ scale: transitionValue }],
-              opacity: transitionValue,
-            }}
-          >
-            <FontAwesome
-              name="trash"
-              style={styles.icon}
-              onPress={() => {
-                if (length === 1) closeEdit();
-
-                props.deleteWorkout(id);
+    <Animated.View style={[styles.item, { translateY }]}>
+      <TouchableWithoutFeedback
+        onPress={() => {
+          if (props.onPress && !editOpened) props.onPress(id);
+        }}
+        onLongPress={() => {
+          if (props.setEditOpened) props.setEditOpened(true);
+        }}
+      >
+        <View style={styles.infoContainer}>
+          <Text style={styles.title}>{title}</Text>
+          {editOpened && (
+            <Animated.View
+              style={{
+                transform: [{ scale: transitionValue }],
+                opacity: transitionValue,
               }}
-            />
-          </Animated.View>
-        )}
-        {type === 'intervals' ||
-          (time !== -1 && !editOpened && <Text style={styles.subText}>{timerToString(time)}</Text>)}
-      </View>
-    </View>
+            >
+              <FontAwesome
+                name="trash"
+                style={styles.icon}
+                onPress={() => {
+                  if (length === 1) closeEdit();
+
+                  props.deleteWorkout(id);
+                }}
+              />
+            </Animated.View>
+          )}
+          {type === 'intervals' && time !== -1 && !editOpened && (
+            <Text style={styles.subText}>{timerToString(time)}</Text>
+          )}
+        </View>
+      </TouchableWithoutFeedback>
+    </Animated.View>
   );
 };
 
 export default connect(null, { deleteWorkout })(WorkoutItem);
 
 const styles = StyleSheet.create({
-  divider: {
-    height: 1.5,
-    borderRadius: 1,
-    backgroundColor: palette.grayscale.medium,
-  },
   subText: {
     fontSize: typography.fontSize.small,
     color: palette.grayscale.light,
@@ -90,5 +103,13 @@ const styles = StyleSheet.create({
   icon: {
     color: palette.text.primary,
     fontSize: 25,
+  },
+  item: {
+    height: ITEM_HEIGHT,
+    alignSelf: 'center',
+    width: '100%',
+    position: 'absolute',
+    top: 0,
+    left: 0,
   },
 });

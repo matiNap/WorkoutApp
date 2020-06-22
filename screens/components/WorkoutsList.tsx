@@ -22,32 +22,21 @@ const WorkoutsList = ({ setEditOpened, editOpened, transitionValue, workouts, on
   return (
     <View style={styles.container}>
       {workouts && workouts.length !== 0 ? (
-        <ScrollView showsVerticalScrollIndicator={false}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ height: 1000 }}>
           {workouts &&
-            workouts.map((workout) => (
-              <TouchableWithoutFeedback
+            workouts.map((workout, index) => (
+              <WorkoutItem
+                title={workout.name}
                 key={workout.id}
-                onPress={() => {
-                  if (onPress && !editOpened) onPress(workout.id);
+                id={workout.id}
+                {...{ editOpened, transitionValue, index, onPress, setEditOpened }}
+                closeEdit={() => {
+                  if (setEditOpened) setEditOpened(false);
                 }}
-                onLongPress={() => {
-                  if (setEditOpened) setEditOpened(true);
-                }}
-              >
-                <WorkoutItem
-                  title={workout.name}
-                  divider
-                  key={workout.id}
-                  id={workout.id}
-                  {...{ editOpened, transitionValue }}
-                  closeEdit={() => {
-                    if (setEditOpened) setEditOpened(false);
-                  }}
-                  length={workouts.length}
-                  time={workout.time}
-                  type={workout.type}
-                />
-              </TouchableWithoutFeedback>
+                length={workouts.length}
+                time={workout.time}
+                type={workout.type}
+              />
             ))}
         </ScrollView>
       ) : (
