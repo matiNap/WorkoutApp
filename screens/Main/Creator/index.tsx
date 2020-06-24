@@ -81,6 +81,9 @@ const Creator = ({ workout, ...props }: Props) => {
           style={{
             flexDirection: 'row',
             alignItems: 'center',
+
+            flex: 1,
+            justifyContent: 'flex-end',
           }}
         >
           {type === 'intervals' && time !== -1 && (

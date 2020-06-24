@@ -51,7 +51,6 @@ const Settings = ({
   loop,
   ...props
 }: Props) => {
-  const navigation = useNavigation();
   const transitionValue = useTransition(opened, {
     duration: 300,
     easing: Easing.inOut(Easing.ease),
@@ -72,7 +71,7 @@ const Settings = ({
       style={[
         StyleSheet.absoluteFill,
         {
-          translateY,
+          transform: [{ translateY }],
         },
       ]}
     >
@@ -91,6 +90,7 @@ const Settings = ({
           <View style={styles.setting}>
             <Text>Workout type</Text>
             <Switch
+              width={metrics.width * 0.2}
               left={SERIES_TYPE}
               right={ROWS_TYPE}
               onChange={(newValue) => {

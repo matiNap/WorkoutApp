@@ -82,7 +82,7 @@ const Overlay = ({
     inputRange: [0, 0.05, 1],
     outputRange: [0, 0.6, 1],
   });
-  const pointerEvents = 'box-none';
+  const pointerEvents = opened ? 'auto' : 'none';
   const overlayTransition = useSpringTransition(keyboardOpened, {});
   const overlayTopOffset = interpolate(overlayTransition, {
     inputRange: [0, 1],

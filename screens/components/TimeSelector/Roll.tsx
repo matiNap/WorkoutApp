@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
-import Animated, { useCode } from 'react-native-reanimated';
+import Animated, { useCode, interpolate, Extrapolate } from 'react-native-reanimated';
 import palette from '_palette';
 import { Text } from 'react-native-elements';
 import { usePanGestureHandler, useValue, snapPoint, timing } from 'react-native-redash';
@@ -14,7 +14,7 @@ interface Props {
   label?: string;
 }
 
-const { cond, eq, add, set, Clock, clockRunning, not, floor, divide, call } = Animated;
+const { cond, eq, add, set, Clock, clockRunning, not, floor, divide, call, sub, abs } = Animated;
 
 const CELL_HEIGHT = 40;
 
@@ -30,6 +30,7 @@ const Roll = ({ range, setIndex, label, selectedIndex }: Props) => {
   const { gestureHandler, state, velocity, translation } = usePanGestureHandler();
   const currentIndex = useValue(0);
   const to = snapPoint(translationY, velocity.y, snapPoints);
+
   useCode(
     () => [
       cond(eq(state, State.ACTIVE), [set(translationY, add(offsetY, translation.y))]),
@@ -50,30 +51,6 @@ const Roll = ({ range, setIndex, label, selectedIndex }: Props) => {
   return (
     <View style={styles.mainContainer}>
       <View style={styles.container}>
-        <LinearGradient
-          colors={[palette.secondary, 'transparent']}
-          style={{
-            position: 'absolute',
-            left: 0,
-            right: 0,
-            top: 0,
-            height: 60,
-            zIndex: 160,
-          }}
-          pointerEvents="box-only"
-        />
-        <LinearGradient
-          colors={['transparent', palette.secondary]}
-          style={{
-            position: 'absolute',
-            left: 0,
-            right: 0,
-            bottom: 0,
-            height: 70,
-            zIndex: 160,
-          }}
-          pointerEvents="box-only"
-        />
         <PanGestureHandler {...gestureHandler}>
           <Animated.View
             style={{
@@ -83,9 +60,20 @@ const Roll = ({ range, setIndex, label, selectedIndex }: Props) => {
             <Animated.View
               style={[styles.valueContainer, { transform: [{ translateY: translationY }] }]}
             >
-              {values.map((value) => {
+              {values.map((value, index) => {
+                const position = sub(index * CELL_HEIGHT, add(CELL_HEIGHT, abs(translationY)));
+                const scale = interpolate(position, {
+                  inputRange: [-CELL_HEIGHT, 0, CELL_HEIGHT],
+                  outputRange: [0.6, 1, 0.6],
+                  extrapolate: Extrapolate.CLAMP,
+                });
+                const opacity = interpolate(position, {
+                  inputRange: [-2 * CELL_HEIGHT, 0, 2 * CELL_HEIGHT],
+                  outputRange: [0.1, 1, 0.1],
+                  extrapolate: Extrapolate.CLAMP,
+                });
                 return (
-                  <AText style={styles.number} key={value}>
+                  <AText style={[styles.number, { transform: [{ scale }], opacity }]} key={value}>
                     {value}
                   </AText>
                 );
@@ -110,7 +98,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   number: {
-    fontSize: 27,
+    fontSize: 30,
     color: palette.text.primary,
     paddingVertical: 5,
     height: CELL_HEIGHT,

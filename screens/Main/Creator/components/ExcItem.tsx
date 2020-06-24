@@ -15,6 +15,7 @@ import typography from '_typography';
 import { AntDesign, MaterialIcons } from '@expo/vector-icons';
 import { exercise } from '_types';
 import reactotron from 'reactotronConfig';
+import globals from '_globals';
 
 const { cond, set, add, eq, floor, multiply, divide, debug, max, and } = Animated;
 
@@ -136,12 +137,21 @@ const ExcItem = ({
     [currentOffset, offsetY, offsets, state],
   );
   return (
-    <Animated.View style={[styles.swapContainer, { zIndex, transform: [{ translateY }] }]}>
+    <Animated.View
+      style={[
+        styles.swapContainer,
+        globals.isIphone ? SHADOW : {},
+        { zIndex, transform: [{ translateY }] },
+      ]}
+    >
       <View>
-        <TouchableWithoutFeedback style={styles.container} {...{ onLongPress }}>
+        <TouchableWithoutFeedback
+          style={[styles.container, !globals.isIphone ? SHADOW : {}]}
+          {...{ onLongPress }}
+        >
           <View style={{ flex: 1 }}>
             <View
-              style={styles.header}
+              style={{ flexDirection: 'row' }}
               ref={(ref) => {
                 //Set x and y for edit overlay transition
                 ref?.measure((fx, fy, width, height, px, py) => {
@@ -153,12 +163,17 @@ const ExcItem = ({
                 onPress={() => {
                   if (!editListOpened) onPressName();
                 }}
-                style={{ flexDirection: 'row' }}
+                style={{
+                  flexDirection: 'row',
+                  width: metrics.width * 0.58,
+                }}
               >
                 <Animated.View style={{ width: editWidth }}>
                   <AntDesign name="edit" style={styles.editIcon} />
                 </Animated.View>
-                <Text style={[styles.text]}>{title}</Text>
+                <Text style={[styles.text]} numberOfLines={1}>
+                  {title}
+                </Text>
               </TouchableWithoutFeedback>
 
               <Switch
@@ -240,6 +255,18 @@ const ExcItem = ({
 
 export default connect(null, { deleteExercise, editExercise, reorderExercises })(ExcItem);
 
+const SHADOW = {
+  shadowColor: '#000',
+  shadowOffset: {
+    width: 0,
+    height: 8,
+  },
+  shadowOpacity: 0.46,
+  shadowRadius: 11.14,
+
+  elevation: 17,
+};
+
 const styles = StyleSheet.create({
   swapContainer: {
     zIndex: 100,
@@ -257,15 +284,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     backgroundColor: palette.secondary,
     borderRadius: BORDER_RADIUS,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 8,
-    },
-    shadowOpacity: 0.46,
-    shadowRadius: 11.14,
 
-    elevation: 17,
     marginVertical: 5,
     paddingHorizontal: 10,
     zIndex: 100,
@@ -277,9 +296,10 @@ const styles = StyleSheet.create({
   },
 
   text: {
-    fontSize: 20,
+    fontSize: 17,
     color: palette.text.primary,
     fontFamily: typography.fonts.primary,
+    width: metrics.width * 0.4,
   },
   subText: {
     fontSize: 35,
