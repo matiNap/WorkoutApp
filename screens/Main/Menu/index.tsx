@@ -7,7 +7,6 @@ import { useSpringTransition } from 'react-native-redash';
 import HideIcon from '_components/HideIcon';
 import { useNavigation } from '@react-navigation/native';
 import Header from '_components/Header';
-import Back from '_components/Back';
 import { Text } from 'react-native-elements';
 import typography from '_typography';
 
@@ -18,11 +17,6 @@ const Workouts = () => {
   return (
     <View style={styles.container}>
       <Header style={{ backgroundColor: 'transparent', justifyContent: 'flex-start' }}>
-        <Back
-          onPress={() => {
-            navigate('Start');
-          }}
-        />
         <Text style={styles.title}>Workouts:</Text>
       </Header>
       <WorkoutsList

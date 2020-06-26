@@ -81,6 +81,9 @@ const Creator = ({ workout, ...props }: Props) => {
           style={{
             flexDirection: 'row',
             alignItems: 'center',
+
+            flex: 1,
+            justifyContent: 'flex-end',
           }}
         >
           {type === 'intervals' && time !== -1 && (
@@ -119,7 +122,6 @@ const Creator = ({ workout, ...props }: Props) => {
 };
 
 const mapStateToProps = (state: RootState, ownProps: Props) => {
-  const { add } = ownProps.route.params;
   const { workouts } = state;
 
   const { id } = ownProps.route.params;

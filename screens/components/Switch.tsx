@@ -5,6 +5,10 @@ import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 import { useTransition } from 'react-native-redash';
 import Animated, { Easing, interpolate } from 'react-native-reanimated';
 import palette from '_palette';
+import metrics from '_metrics';
+
+const WIDTH = metrics.width * 0.15;
+const HEIGHT = metrics.height * 0.03;
 
 interface Props {
   left: string;
@@ -12,19 +16,30 @@ interface Props {
   onChange: (newValue: string) => void;
   initValue: boolean;
   style?: CSSProperties;
+  width: number;
+  height: number;
 }
 
-const Switch = ({ left, right, onChange, initValue, style }: Props) => {
+const Switch = ({
+  left,
+  right,
+  onChange,
+  initValue,
+  style,
+  width: newWidth,
+  height: newHeight,
+}: Props) => {
   const [swtich, setSwitch] = useState(initValue);
   const transitionValue = useTransition(swtich, {
     duration: 150,
     easing: Easing.inOut(Easing.ease),
   });
+  const width = newWidth ? newWidth : WIDTH;
+  const height = newHeight ? newHeight : HEIGHT;
   const offsetX = interpolate(transitionValue, {
     inputRange: [0, 1],
-    outputRange: [0, 65],
+    outputRange: [0, width],
   });
-
   return (
     <TouchableWithoutFeedback
       onPress={() => {
@@ -36,7 +51,7 @@ const Switch = ({ left, right, onChange, initValue, style }: Props) => {
         }
       }}
     >
-      <Animated.View style={[styles.container, style]}>
+      <Animated.View style={[styles.container, { height }, style]}>
         <Animated.View
           style={[
             styles.setter,
@@ -46,14 +61,15 @@ const Switch = ({ left, right, onChange, initValue, style }: Props) => {
                   translateX: offsetX,
                 },
               ],
+              width,
             },
           ]}
         ></Animated.View>
-        <View style={styles.value}>
-          <Text>{left}</Text>
+        <View style={[styles.value, { width }]}>
+          <Text style={styles.text}>{left}</Text>
         </View>
-        <View style={styles.value}>
-          <Text>{right}</Text>
+        <View style={[styles.value, { width }]}>
+          <Text style={styles.text}>{right}</Text>
         </View>
       </Animated.View>
     </TouchableWithoutFeedback>
@@ -67,17 +83,22 @@ const styles = StyleSheet.create({
     backgroundColor: palette.secondaryDark,
     borderRadius: 20,
     flexDirection: 'row',
-    height: 25,
+    height: HEIGHT,
   },
   value: {
-    width: 65,
+    width: WIDTH,
+    paddingHorizontal: 5,
     alignItems: 'center',
+    alignSelf: 'center',
   },
   setter: {
     position: 'absolute',
-    width: 65,
-    height: 25,
+    width: WIDTH,
+    height: HEIGHT,
     borderRadius: 20,
     backgroundColor: palette.primary,
+  },
+  text: {
+    fontSize: 17,
   },
 });

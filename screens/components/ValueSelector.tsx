@@ -1,12 +1,9 @@
 import React from 'react';
 import { StyleSheet, View, BackHandler } from 'react-native';
 import { Text } from 'react-native-elements';
-import Roll from '_components/TimeSelector/Roll';
 import ExitButtons from '_components/ExitButtons';
 import Overlay from '_components/Overlay';
-import { createRange } from '_helpers';
-
-const RANGE = createRange(1, 100);
+import NumberInput from './NumberInput';
 
 interface Props {
   title?: string;
@@ -15,7 +12,7 @@ interface Props {
   onConfirm: (value: number) => void;
 }
 class TimeSelector extends React.Component<Props> {
-  state = { value: 0 };
+  state = { value: 1, textValue: 'x01' };
   componentDidMount() {
     BackHandler.addEventListener('hardwareBackPress', this.backHandler);
   }
@@ -35,13 +32,19 @@ class TimeSelector extends React.Component<Props> {
   }
   render() {
     const { title, setOpened, opened } = this.props;
+    const { value } = this.state;
     if (!opened) return null;
     return (
       <Overlay {...{ opened, close: () => setOpened(false) }}>
         <View style={styles.container}>
           <Text style={styles.title}>{title}</Text>
           <View style={styles.rolls}>
-            <Roll range={RANGE} setIndex={(value) => this.setState({ value })} label="" />
+            <NumberInput
+              {...{ value }}
+              setValue={(value) => {
+                this.setState({ value });
+              }}
+            />
           </View>
           <ExitButtons
             {...{ setOpened }}

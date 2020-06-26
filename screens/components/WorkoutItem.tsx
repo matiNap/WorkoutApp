@@ -45,7 +45,7 @@ const WorkoutItem = ({
 }: Props) => {
   const translateY = useSpringTransition(index * ITEM_HEIGHT, {});
   return (
-    <Animated.View style={[styles.item, { translateY }]}>
+    <Animated.View style={[styles.item, { transform: [{ translateY }] }]}>
       <TouchableWithoutFeedback
         onPress={() => {
           if (props.onPress && !editOpened) props.onPress(id);

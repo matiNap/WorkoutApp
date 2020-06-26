@@ -150,12 +150,13 @@ const TodoList = ({ exercises, currentIndex }: Props) => {
               const currentStyle = currentIndex === index ? styles.currentText : styles.otherText;
               if (exercise.type === 'break' || exercise.type === 'typeBreak')
                 return (
-                  <Text style={[styles.breakText, currentStyle]}>{`Break ${timerToString(
-                    exercise.value,
-                  )}`}</Text>
+                  <Text
+                    style={[styles.breakText, currentStyle]}
+                    key={`next${index}`}
+                  >{`Break ${timerToString(exercise.value)}`}</Text>
                 );
               return (
-                <View style={styles.itemContainer}>
+                <View style={styles.itemContainer} key={`next${index}`}>
                   <Text style={currentStyle}>{exercise.name}</Text>
                   {exercise.type === 'reps' ? (
                     <Text style={[styles.subText, currentStyle]}>x{exercise.value}</Text>
@@ -183,7 +184,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
     width: metrics.width,
     position: 'absolute',
-    top: metrics.height - HEADER_HEIGHT,
+    top: metrics.height - HEADER_HEIGHT + 5,
   },
   background: {
     // backgroundColor: 'rgba(0,0,0,0.5)',
