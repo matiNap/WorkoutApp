@@ -104,9 +104,9 @@ const styles = StyleSheet.create({
     flex: 1,
     fontFamily: typography.fonts.primary,
     alignSelf: 'center',
-    backgroundColor: 'rgba(0,0,0,0.15)',
+
     width: '100%',
-    borderRadius: 10,
+
     paddingHorizontal: 5,
     height: 20,
   },
@@ -117,5 +117,7 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     height: 30,
+    backgroundColor: 'rgba(0,0,0,0.15)',
+    borderRadius: 10,
   },
 });

@@ -219,16 +219,14 @@ const ExcItem = ({
               ]}
             >
               <View style={{ flexGrow: 2, justifyContent: 'center' }}>
-                <MaterialIcons
-                  name="delete"
-                  style={styles.deleteIcon}
+                <TouchableWithoutFeedback
                   onPress={() => {
-                    if (!animationEnded) {
-                      props.deleteLocalExercise(myIndex);
-                      props.deleteExercise(workout_id, id);
-                    }
+                    props.deleteLocalExercise(myIndex);
+                    props.deleteExercise(workout_id, id);
                   }}
-                />
+                >
+                  <MaterialIcons name="delete" style={styles.deleteIcon} />
+                </TouchableWithoutFeedback>
               </View>
               <View
                 style={{

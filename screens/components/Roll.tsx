@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import Animated, { useCode, interpolate, Extrapolate } from 'react-native-reanimated';
@@ -20,7 +20,7 @@ const CELL_HEIGHT = 40;
 
 const AText = Animated.createAnimatedComponent(Text);
 
-const Roll = ({ range, setIndex, label, selectedIndex }: Props) => {
+const Roll = ({ range, setIndex, label }: Props) => {
   const clock = new Clock();
   const values = range;
   const maxHeight = values.length * CELL_HEIGHT;
@@ -72,6 +72,7 @@ const Roll = ({ range, setIndex, label, selectedIndex }: Props) => {
                   outputRange: [0.1, 1, 0.1],
                   extrapolate: Extrapolate.CLAMP,
                 });
+
                 return (
                   <AText style={[styles.number, { transform: [{ scale }], opacity }]} key={value}>
                     {value}

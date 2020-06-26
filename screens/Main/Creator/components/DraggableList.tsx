@@ -5,10 +5,8 @@ import ExcItem from './ExcItem';
 import { exercise } from '_types';
 import Edit from './Edit';
 import { position } from '_types';
-import { ScrollView, TouchableWithoutFeedback } from 'react-native-gesture-handler';
 import EditValue from './EditValue';
 import metrics from '_metrics';
-import reactotron from 'reactotronConfig';
 import AddButton from './AddButton';
 import { addExercise } from '_actions/creators/workout';
 import { connect } from 'react-redux';
@@ -16,6 +14,7 @@ import _ from 'lodash';
 import uid from 'uid';
 import palette from '_palette';
 import { Text } from 'react-native-elements';
+import { ScrollView } from 'react-native-gesture-handler';
 
 interface Props {
   data: exercise[];
@@ -23,7 +22,6 @@ interface Props {
   openEditList: (open: boolean) => void;
   editListOpened: boolean;
   editTransition: Animated.Value<number>;
-  addWorkout: typeof addWorkout;
   addButtonOffset: Animated.Value<number>;
   addExercise: typeof addExercise;
 }

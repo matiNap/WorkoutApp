@@ -130,7 +130,7 @@ const Overlay = ({
           }}
           {...{ pointerEvents }}
         >
-          {opened ? children : null}
+          {children}
         </Animated.View>
       </Animated.View>
     </View>

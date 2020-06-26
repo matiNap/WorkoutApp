@@ -1,12 +1,9 @@
 import React from 'react';
 import { StyleSheet, View, BackHandler } from 'react-native';
 import { Text } from 'react-native-elements';
-import Roll from './Roll';
 import ExitButtons from '_components/ExitButtons';
 import Overlay from '_components/Overlay';
-import { createRange } from '_helpers';
-
-const RANGE = createRange(0, 60);
+import NumberInput from '_components/NumberInput';
 
 interface Props {
   title?: string;
@@ -36,22 +33,22 @@ class TimeSelector extends React.Component<Props> {
   }
   render() {
     const { title, setOpened, opened } = this.props;
+    const { minutes, seconds } = this.state;
     if (!opened) return null;
     return (
       <Overlay {...{ opened, close: () => setOpened(false) }}>
         <View style={styles.container}>
           <Text style={styles.title}>{title}</Text>
           <View style={styles.rolls}>
-            <Roll
-              range={RANGE}
-              setIndex={(minutes) => this.setState({ minutes })}
-              label="Minutes"
-            />
-            <Roll
-              range={RANGE}
-              setIndex={(seconds) => this.setState({ seconds })}
-              label="Seconds"
-            />
+            <View style={{ marginRight: 10 }}>
+              <NumberInput setValue={(minutes) => this.setState({ minutes })} value={minutes} />
+              <Text style={styles.label}>Minutes</Text>
+            </View>
+
+            <View>
+              <NumberInput setValue={(seconds) => this.setState({ seconds })} value={seconds} />
+              <Text style={styles.label}>Seconds</Text>
+            </View>
           </View>
           <ExitButtons
             {...{ setOpened }}
@@ -89,5 +86,9 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontSize: 22,
     marginLeft: 15,
+  },
+  label: {
+    fontSize: 15,
+    marginTop: 5,
   },
 });

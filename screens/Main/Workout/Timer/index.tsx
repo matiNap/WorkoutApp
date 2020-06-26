@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, StatusBar } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Header from './components/Header';
 import { connect } from 'react-redux';
 import { RootState } from '_rootReducer';
@@ -22,8 +22,8 @@ import { FontAwesome } from '@expo/vector-icons';
 import Overlay from '_components/Overlay';
 import ExitButtons from '_components/ExitButtons';
 import typography from '_typography';
-import StartScreen from './components/StartScreen';
 import { Audio } from 'expo-av';
+import StartScreen from './components/StartScreen';
 
 interface Props {
   route: {
@@ -48,10 +48,11 @@ interface State {
   stopped: boolean;
   currentWorkoutTime: number;
   exitOpened: boolean;
-  start: boolean;
+  started: boolean;
 }
 
 const AUDIO_PATH = '../../../../assets/audio';
+const FILE_NAME = 'beep.mp3';
 
 class Timer extends React.Component<Props, State> {
   state: State = {
@@ -67,7 +68,7 @@ class Timer extends React.Component<Props, State> {
     todoList: [],
     ended: false,
     exitOpened: false,
-    start: true,
+    started: false,
   };
   timer: NodeJS.Timeout;
   currentTimer: NodeJS.Timeout;
@@ -76,19 +77,22 @@ class Timer extends React.Component<Props, State> {
   async componentDidMount() {
     const { type, exercises, loop, exerciseBreak, typeBreak, time } = this.props.workout;
 
-    const todoList = createExerciseTodoList(type, exercises, loop, exerciseBreak, typeBreak);
+    this.timer = setInterval(() => {
+      const { started } = this.state;
+      if (started) {
+        const { currentTime, stopped, ended, exitOpened } = this.state;
 
-    this.timer = setInterval(async () => {
-      const { currentTime, stopped, ended, exitOpened } = this.state;
-
-      if (!stopped && !ended && !exitOpened) {
-        this.updateTimer();
-      }
-      if (type === 'intervals' && time === currentTime + 1) {
-        this.setState({ ended: true });
-        clearInterval(this.timer);
+        if (!stopped && !ended && !exitOpened) {
+          this.updateTimer();
+        }
+        if (type === 'intervals' && time === currentTime + 1) {
+          this.setState({ ended: true });
+          clearInterval(this.timer);
+        }
       }
     }, 1000);
+
+    const todoList = createExerciseTodoList(type, exercises, loop, exerciseBreak, typeBreak);
 
     if (todoList.length !== 0) {
       this.setState((prevState) => {
@@ -105,12 +109,16 @@ class Timer extends React.Component<Props, State> {
     }
 
     try {
-      await this.alarm.loadAsync(require(`${AUDIO_PATH}/beep.mp3`));
+      await this.alarm.loadAsync(require(`${AUDIO_PATH}/${FILE_NAME}`));
       await this.alarm.setVolumeAsync(0.1);
     } catch (error) {
       console.log(error.message);
     }
   }
+
+  startTimer = () => {
+    this.setState({ started: true });
+  };
 
   componentWillUnmount() {
     clearInterval(this.timer);
@@ -194,7 +202,9 @@ class Timer extends React.Component<Props, State> {
           {targetType !== 'reps' && (
             <View style={styles.arcProgress}>
               <ArcProgress
-                progress={new Animated.Value(1 - -currentWorkoutTime / currentTodo.value)}
+                progress={
+                  new Animated.Value(currentTodo ? 1 - -currentWorkoutTime / currentTodo.value : 0)
+                }
               />
             </View>
           )}
@@ -228,45 +238,47 @@ class Timer extends React.Component<Props, State> {
   };
 
   render() {
-    const { currentTime, target, todoList, exitOpened, start } = this.state;
+    const { currentTime, target, todoList, exitOpened, started } = this.state;
     const { workout, navigation } = this.props;
     const { type: workoutType, time } = workout;
     const { navigate } = navigation;
 
-    return (
-      <View style={styles.container}>
-        <Header
-          {...{ workout }}
-          onRequestClose={() => {
-            this.setState({ exitOpened: true });
-          }}
-        />
-        {workoutType === 'intervals' ? (
-          <ProgressBar progress={(currentTime / time) * 100} {...{ time, currentTime }} />
-        ) : (
-          <TimerClock size={30} style={styles.progressTimer} time={currentTime} />
-        )}
-        {this.renderWorkoutState()}
-        <TodoList exercises={todoList} currentIndex={target.index} currentIndex={target.index} />
-        <Overlay
-          opened={exitOpened}
-          close={() => this.setState({ exitOpened: false })}
-          style={styles.overlay}
-        >
-          <Text style={styles.exitText}>Are you sure to end workout?</Text>
+    if (currentTime >= 0 && started) {
+      return (
+        <View style={styles.container}>
+          {workoutType === 'intervals' ? (
+            <ProgressBar progress={(currentTime / time) * 100} {...{ time, currentTime }} />
+          ) : (
+            <TimerClock size={30} style={styles.progressTimer} time={currentTime} />
+          )}
+          {this.renderWorkoutState()}
+          <TodoList exercises={todoList} currentIndex={target.index} currentIndex={target.index} />
+          <Overlay
+            opened={exitOpened}
+            close={() => this.setState({ exitOpened: false })}
+            style={styles.overlay}
+          >
+            <Text style={styles.exitText}>Are you sure to end workout?</Text>
 
-          <ExitButtons
-            setOpened={(opened) => {
-              this.setState({ exitOpened: opened });
-            }}
-            onCancel={() => this.setState({ exitOpened: false })}
-            onConfirm={() => {
-              navigate('Start');
+            <ExitButtons
+              setOpened={(opened) => {
+                this.setState({ exitOpened: opened });
+              }}
+              onCancel={() => this.setState({ exitOpened: false })}
+              onConfirm={() => {
+                navigate('Start');
+              }}
+            />
+          </Overlay>
+          <Header
+            {...{ workout }}
+            onRequestClose={() => {
+              this.setState({ exitOpened: true });
             }}
           />
-        </Overlay>
-      </View>
-    );
+        </View>
+      );
+    } else return <StartScreen endStart={this.startTimer} />;
   }
 }
 
@@ -282,7 +294,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: palette.secondary,
-    paddingTop: StatusBar.currentHeight + 10,
+    paddingTop: metrics.windowHeight * 0.1,
+
     paddingHorizontal: 15,
   },
   progressTimer: {
@@ -324,5 +337,10 @@ const styles = StyleSheet.create({
   overlay: {
     height: metrics.height * 0.25,
     alignItems: 'center',
+  },
+  indicatorContainer: {
+    flex: 1,
+    backgroundColor: palette.secondaryDark,
+    justifyContent: 'center',
   },
 });
