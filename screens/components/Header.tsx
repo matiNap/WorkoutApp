@@ -1,5 +1,5 @@
 import React, { CSSProperties, ReactNode } from 'react';
-import { StyleSheet, StatusBar, View } from 'react-native';
+import { StyleSheet, StatusBar } from 'react-native';
 import palette from '_palette';
 import metrics from '_metrics';
 import Animated from 'react-native-reanimated';
@@ -10,11 +10,7 @@ interface Props {
 }
 
 const Header = ({ children, style }: Props) => {
-  return (
-    <Animated.View style={[styles.header, style]}>
-      <View style={styles.container}>{children}</View>
-    </Animated.View>
-  );
+  return <Animated.View style={[styles.header, style]}>{children}</Animated.View>;
 };
 
 export default Header;
@@ -32,21 +28,15 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.4,
     shadowRadius: 6,
-    alignSelf: 'center',
-    alignContent: 'center',
+
+    // elevation: 2,
     borderBottomLeftRadius: 10,
     borderBottomRightRadius: 10,
     height: metrics.headerHeight,
+    paddingTop: StatusBar.currentHeight,
     paddingHorizontal: 10,
     flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  container: {
     alignItems: 'center',
-    justifyContent: 'flex-start',
-    flexDirection: 'row',
-    flex: 1,
-    marginTop: metrics.statusBarHeight,
-    height: metrics.headerHeight - 20,
+    justifyContent: 'space-between',
   },
 });

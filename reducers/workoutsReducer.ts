@@ -6,7 +6,7 @@ import reactotron from 'reactotron-react-native';
 const initState: workout[] = [];
 
 const updateArray = (array: any[], id: string, data: any) => {
-  return array.map(({ id: currentId, ...item }) => {
+  const ar = array.map(({ id: currentId, ...item }) => {
     if (currentId === id) {
       return {
         id,
@@ -15,8 +15,10 @@ const updateArray = (array: any[], id: string, data: any) => {
       };
     }
 
-    return item;
+    return { id: currentId, ...item };
   });
+
+  return ar;
 };
 
 const removeWorkout = (workouts: workout[], id: string) => {
@@ -36,7 +38,9 @@ export default (state = initState, action) => {
       return [...state, action.payload];
     case types.UPDATE_WORKOUT: {
       const { id, data } = action.payload;
-      return [...updateArray(state, id, data)];
+      const arr = updateArray(state, id, data);
+
+      return [...arr];
     }
 
     default:

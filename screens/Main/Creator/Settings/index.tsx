@@ -106,7 +106,6 @@ const Settings = ({
           </View>
           <TouchableWithoutFeedback
             onPress={() => {
-              console.log('set opened');
               setOpenedExcTimer(true);
             }}
           >
@@ -148,6 +147,7 @@ const Settings = ({
             }}
             setOpened={setOpenedExcTimer}
             opened={openedExcTimer}
+            initValue={exerciseBreak}
           />
         ) : null}
         {openedTypeTimer ? (
@@ -158,6 +158,7 @@ const Settings = ({
               props.saveTypeBreak(id, fromTimer(minutes, seconds));
             }}
             opened={openedTypeTimer}
+            initValue={typeBreak}
           />
         ) : null}
         {openedLoopValue ? (
@@ -165,9 +166,10 @@ const Settings = ({
             title={loopTitle}
             setOpened={setOpenedLoopValue}
             onConfirm={(value) => {
-              props.saveLoop(id, value + 1);
+              props.saveLoop(id, value);
             }}
             opened={openedLoopValue}
+            initValue={loop}
           />
         ) : null}
       </View>
