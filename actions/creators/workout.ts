@@ -1,7 +1,6 @@
 import { workout, workoutType, exercise } from '_types';
 import * as types from '_actions/workout';
 import _ from 'lodash';
-import reactotron from 'reactotron-react-native';
 import * as SQLite from 'expo-sqlite';
 import { RootState } from '_rootReducer';
 import uid from 'uid';
@@ -17,7 +16,7 @@ export const createWorkout = () => async (dispatch, getState) => {
   getDatabase().transaction((tx) => {
     const id = uid();
     tx.executeSql(
-      'insert into workouts (name,type,exerciseBreak,typeBreak,time,exercises,id,loop) values ("Workout name","series",0,0,-1,"[]",?,1);',
+      'insert into workouts (name,type,exerciseBreak,typeBreak,time,exercises,id,loop) values ("Workout name","series",1,1,-1,"[]",?,1);',
       [id],
     );
     dispatch({
@@ -25,12 +24,13 @@ export const createWorkout = () => async (dispatch, getState) => {
       payload: {
         name: 'Workout name',
         type: 'series',
-        exerciseBreak: 0,
-        typeBreak: 0,
+        exerciseBreak: 1,
+        typeBreak: 1,
         exercises: [],
         time: 0,
         workout_id: getState().workouts.length + 1,
         id,
+        loop: 1,
       },
     });
   });
@@ -256,6 +256,7 @@ const updateTime = (workoutId: string) => (dispatch, getState: () => RootState) 
       break;
     } else {
       if (time === -1) time = 0;
+
       time += exercises[i].value;
     }
   }

@@ -4,17 +4,22 @@ import { Text } from 'react-native-elements';
 import ExitButtons from '_components/ExitButtons';
 import Overlay from '_components/Overlay';
 import NumberInput from '_components/NumberInput';
+import { toTimer } from '_helpers';
+import reactotron from 'reactotronConfig';
 
 interface Props {
   title?: string;
   opened: boolean;
   setOpened: (opened: boolean) => void;
   onConfirm: (minutes: number, seconds: number) => void;
+  initValue: number;
 }
 class TimeSelector extends React.Component<Props> {
-  state = { minutes: 0, seconds: 0 };
+  state = { minutes: 0, seconds: 1 };
   componentDidMount() {
     BackHandler.addEventListener('hardwareBackPress', this.backHandler);
+    const { opened, initValue } = this.props;
+    if (opened) this.setState({ value: toTimer(initValue) });
   }
   backHandler = () => {
     if (this.props.opened) {
@@ -28,7 +33,8 @@ class TimeSelector extends React.Component<Props> {
 
   componentDidUpdate(prevProps: Props) {
     if (prevProps.opened !== this.props.opened) {
-      this.setState({ minutes: 0, seconds: 0 });
+      const { initValue } = this.props;
+      this.setState(toTimer(initValue));
     }
   }
   render() {
@@ -41,12 +47,36 @@ class TimeSelector extends React.Component<Props> {
           <Text style={styles.title}>{title}</Text>
           <View style={styles.rolls}>
             <View style={{ marginRight: 10 }}>
-              <NumberInput setValue={(minutes) => this.setState({ minutes })} value={minutes} />
+              <NumberInput
+                maxRange={59}
+                setValue={(minutes) => this.setState({ minutes })}
+                value={minutes}
+                updateValue={(offset) => {
+                  this.setState((prevState) => {
+                    const { minutes } = prevState;
+                    if ((minutes > 0 && minutes < 59) || (minutes === 0 && offset === 1)) {
+                      return { minutes: minutes + offset };
+                    } else return {};
+                  });
+                }}
+              />
               <Text style={styles.label}>Minutes</Text>
             </View>
 
             <View>
-              <NumberInput setValue={(seconds) => this.setState({ seconds })} value={seconds} />
+              <NumberInput
+                maxRange={59}
+                setValue={(seconds) => this.setState({ seconds })}
+                value={seconds}
+                updateValue={(offset) => {
+                  this.setState((prevState) => {
+                    const { seconds } = prevState;
+                    if ((seconds > 0 && seconds < 59) || (seconds === 0 && offset === 1)) {
+                      return { seconds: seconds + offset };
+                    } else return {};
+                  });
+                }}
+              />
               <Text style={styles.label}>Seconds</Text>
             </View>
           </View>
@@ -74,6 +104,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
+    justifyContent: 'space-between',
   },
   rolls: {
     flexDirection: 'row',

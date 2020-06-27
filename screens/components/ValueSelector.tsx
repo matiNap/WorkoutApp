@@ -4,17 +4,27 @@ import { Text } from 'react-native-elements';
 import ExitButtons from '_components/ExitButtons';
 import Overlay from '_components/Overlay';
 import NumberInput from './NumberInput';
+import reactotron from 'reactotronConfig';
 
 interface Props {
   title?: string;
   opened: boolean;
   setOpened: (opened: boolean) => void;
   onConfirm: (value: number) => void;
+  initValue: number;
 }
-class TimeSelector extends React.Component<Props> {
+class ValueSelector extends React.Component<Props> {
   state = { value: 1, textValue: 'x01' };
   componentDidMount() {
     BackHandler.addEventListener('hardwareBackPress', this.backHandler);
+    const { opened, initValue } = this.props;
+    if (opened) this.setState({ value: initValue });
+  }
+  componentDidUpdate(prevProps: Props) {
+    if (prevProps.opened !== this.props.opened) {
+      const { initValue } = this.props;
+      this.setState({ value: initValue });
+    }
   }
   backHandler = () => {
     if (this.props.opened) {
@@ -25,11 +35,7 @@ class TimeSelector extends React.Component<Props> {
   componentWillUnmount() {
     BackHandler.removeEventListener('hardwareBackPress', this.backHandler);
   }
-  componentDidUpdate(prevProps: Props) {
-    if (prevProps.opened !== this.props.opened) {
-      this.setState({ value: 0 });
-    }
-  }
+
   render() {
     const { title, setOpened, opened } = this.props;
     const { value } = this.state;
@@ -40,9 +46,21 @@ class TimeSelector extends React.Component<Props> {
           <Text style={styles.title}>{title}</Text>
           <View style={styles.rolls}>
             <NumberInput
+              maxRange={100}
               {...{ value }}
               setValue={(value) => {
                 this.setState({ value });
+              }}
+              updateValue={(offset) => {
+                this.setState((prevState) => {
+                  const { value } = prevState;
+
+                  if ((value > 0 && value < 100) || (value === 0 && offset === 1)) {
+                    return {
+                      value: value + offset,
+                    };
+                  }
+                });
               }}
             />
           </View>
@@ -59,7 +77,7 @@ class TimeSelector extends React.Component<Props> {
   }
 }
 
-export default TimeSelector;
+export default ValueSelector;
 
 const styles = StyleSheet.create({
   background: {
@@ -70,6 +88,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
+    justifyContent: 'space-between',
   },
   rolls: {
     flexDirection: 'row',

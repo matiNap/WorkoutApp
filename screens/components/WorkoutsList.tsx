@@ -24,20 +24,22 @@ const WorkoutsList = ({ setEditOpened, editOpened, transitionValue, workouts, on
       {workouts && workouts.length !== 0 ? (
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ height: 1000 }}>
           {workouts &&
-            workouts.map((workout, index) => (
-              <WorkoutItem
-                title={workout.name}
-                key={workout.id}
-                id={workout.id}
-                {...{ editOpened, transitionValue, index, onPress, setEditOpened }}
-                closeEdit={() => {
-                  if (setEditOpened) setEditOpened(false);
-                }}
-                length={workouts.length}
-                time={workout.time}
-                type={workout.type}
-              />
-            ))}
+            workouts.map((workout, index) => {
+              return (
+                <WorkoutItem
+                  title={workout.name}
+                  key={workout.id}
+                  id={workout.id}
+                  {...{ editOpened, transitionValue, index, onPress, setEditOpened }}
+                  closeEdit={() => {
+                    if (setEditOpened) setEditOpened(false);
+                  }}
+                  length={workouts.length}
+                  time={workout.time}
+                  type={workout.type}
+                />
+              );
+            })}
         </ScrollView>
       ) : (
         <View style={styles.placeholder}>

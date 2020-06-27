@@ -84,7 +84,7 @@ class DraggableList extends React.Component<Props, State> {
 
   addExercise = () => {
     const { id } = this.props;
-    const newExercise = { name: 'New exercise', type: 'reps', value: 0, id: uid() };
+    const newExercise = { name: 'New exercise', type: 'reps', value: 1, id: uid() };
     this.props.addExercise(id, newExercise);
     this.offsets.push(new Animated.Value(this.offsets.length * metrics.excItemHeight));
     this.data.push(newExercise);

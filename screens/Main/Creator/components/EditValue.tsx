@@ -20,17 +20,19 @@ interface Props {
   editExercise: typeof editExercise;
   type: exerciseType;
   updateLocalExercise: (index: number | string, update: exercise) => void;
+  value: number;
 }
 
-const EditValue = ({ opened, type, close, workoutId, exerciseId, ...props }: Props) => {
-  if (type === 'reps') {
+const EditValue = ({ opened, type, close, workoutId, exerciseId, value, ...props }: Props) => {
+  if (type !== 'reps') {
     return (
-      <ValueSelector
+      <TimeSelector
         {...{ opened }}
         setOpened={close}
-        title="Reps: "
-        onConfirm={(value) => {
-          const updated = { value };
+        title="Time: "
+        initValue={value}
+        onConfirm={(m, s) => {
+          const updated = { value: fromTimer(m, s) };
           props.editExercise(workoutId, exerciseId, updated);
           props.updateLocalExercise(exerciseId, updated);
         }}
@@ -38,12 +40,13 @@ const EditValue = ({ opened, type, close, workoutId, exerciseId, ...props }: Pro
     );
   } else {
     return (
-      <TimeSelector
+      <ValueSelector
         {...{ opened }}
         setOpened={close}
-        title="Time: "
-        onConfirm={(m, s) => {
-          const updated = { value: fromTimer(m, s) };
+        initValue={value}
+        title="Reps: "
+        onConfirm={(value) => {
+          const updated = { value };
           props.editExercise(workoutId, exerciseId, updated);
           props.updateLocalExercise(exerciseId, updated);
         }}
