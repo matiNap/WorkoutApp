@@ -246,7 +246,7 @@ class Timer extends React.Component<Props, State> {
     if (currentTime >= 0 && started) {
       return (
         <View style={styles.container}>
-          {workoutType === 'intervals' ? (
+          {workoutType === 'intervals' && time !== -1 ? (
             <ProgressBar progress={(currentTime / time) * 100} {...{ time, currentTime }} />
           ) : (
             <TimerClock size={30} style={styles.progressTimer} time={currentTime} />
@@ -327,6 +327,7 @@ const styles = StyleSheet.create({
   pause: {
     fontSize: 50,
     color: palette.text.primary,
+    marginTop: 25,
   },
   exitText: {
     fontSize: typography.fontSize.big,

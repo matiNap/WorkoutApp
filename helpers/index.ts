@@ -65,7 +65,7 @@ export const createExerciseTodoList = (
     for (let i = 0; i < loop; i++) {
       for (let j = 0; j < exericses.length; j++) {
         todo.push(exericses[j]);
-        if (j !== exericses.length - 1) todo.push({ type: 'break', value: exericseBreak });
+        if (j < exericses.length - 1) todo.push({ type: 'break', value: exericseBreak });
       }
       if (i !== loop - 1) todo.push({ type: 'typeBreak', value: typeBreak });
     }

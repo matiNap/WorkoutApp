@@ -12,8 +12,6 @@ import { connect } from 'react-redux';
 import { RootState } from '_rootReducer';
 import _ from 'lodash';
 import metrics from '_metrics';
-import { useSpringTransition, withSpringTransition } from 'react-native-redash';
-import { interpolate } from 'react-native-reanimated';
 
 interface Props {
   opened: boolean;
@@ -69,8 +67,14 @@ class Edit extends React.Component<Props> {
         </View>
         <ExitButtons
           setOpened={this.props.close}
-          onConfirm={this.onConfirm}
-          onCancel={this.props.close}
+          onConfirm={() => {
+            this.onConfirm();
+            Keyboard.dismiss();
+          }}
+          onCancel={() => {
+            Keyboard.dismiss();
+            this.props.close();
+          }}
         />
       </Overlay>
     );

@@ -12,12 +12,13 @@ import Animated, {
   Easing,
   set,
   greaterOrEq,
+  add,
 } from 'react-native-reanimated';
 import palette from '_palette';
 import metrics from '_metrics';
 import { timerToString } from '_helpers';
 import { LinearGradient } from 'expo-linear-gradient';
-import { PanGestureHandler, ScrollView, State } from 'react-native-gesture-handler';
+import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import { onGestureEvent, timing } from 'react-native-redash';
 import typography from '_typography';
 
@@ -41,13 +42,13 @@ const renderNextState = (exercises: todo[], currentIndex: number, nextEnded: boo
 
 const ALinearGradient = Animated.createAnimatedComponent(LinearGradient);
 
-const ITEM_HEIGHT = metrics.height * 0.12;
+const ITEM_HEIGHT = metrics.height * 0.1;
 const HEADER_HEIGHT = metrics.height * 0.14;
 const LINEAR_MIN_HEIGHT = HEADER_HEIGHT * 1.2;
 
 const TodoList = ({ exercises, currentIndex }: Props) => {
   const minHeight = metrics.height * 0.7;
-  const offsetTarget = -minHeight + HEADER_HEIGHT;
+  const offsetTarget = -metrics.height * 0.5;
 
   const nextEnded = exercises.length - 1 === currentIndex;
   const { offsetY, gestureHandler, translateY, state, linearHeight } = useMemo(() => {
@@ -120,7 +121,14 @@ const TodoList = ({ exercises, currentIndex }: Props) => {
     [],
   );
   return (
-    <View style={[StyleSheet.absoluteFill]}>
+    <View
+      style={{
+        position: 'absolute',
+        height: metrics.height,
+        top: metrics.height - HEADER_HEIGHT,
+        width: metrics.width,
+      }}
+    >
       <ALinearGradient
         colors={['transparent', 'rgba(0,0,0,0.8)']}
         style={{
@@ -131,10 +139,12 @@ const TodoList = ({ exercises, currentIndex }: Props) => {
           height: linearHeight,
         }}
       />
-      <PanGestureHandler {...gestureHandler}>
-        <Animated.View
-          style={[styles.container, { minHeight, transform: [{ translateY: offsetY }] }]}
-        >
+
+      <Animated.View
+        pointerEvents="auto"
+        style={[styles.container, { minHeight, transform: [{ translateY: offsetY }] }]}
+      >
+        <PanGestureHandler {...gestureHandler}>
           <Animated.View style={[styles.header]}>
             <View style={styles.swipeBar}></View>
             {exercises.length !== 0 && (
@@ -144,33 +154,37 @@ const TodoList = ({ exercises, currentIndex }: Props) => {
               </View>
             )}
           </Animated.View>
-
-          <ScrollView style={styles.listContainer}>
-            {exercises.map((exercise, index) => {
-              const currentStyle = currentIndex === index ? styles.currentText : styles.otherText;
-              if (exercise.type === 'break' || exercise.type === 'typeBreak')
-                return (
-                  <Text
-                    style={[styles.breakText, currentStyle]}
-                    key={`next${index}`}
-                  >{`Break ${timerToString(exercise.value)}`}</Text>
-                );
-              return (
-                <View style={styles.itemContainer} key={`next${index}`}>
-                  <Text style={currentStyle}>{exercise.name}</Text>
-                  {exercise.type === 'reps' ? (
-                    <Text style={[styles.subText, currentStyle]}>x{exercise.value}</Text>
-                  ) : (
-                    <Text style={[styles.subText, currentStyle]}>
-                      {timerToString(exercise.value)}
-                    </Text>
-                  )}
-                </View>
-              );
-            })}
-          </ScrollView>
-        </Animated.View>
-      </PanGestureHandler>
+        </PanGestureHandler>
+      </Animated.View>
+      <Animated.ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ height: 2000 }}
+        style={[
+          styles.listContainer,
+          { transform: [{ translateY: add(offsetY, HEADER_HEIGHT) }], height: 1000 },
+        ]}
+      >
+        {exercises.map((exercise, index) => {
+          const currentStyle = currentIndex === index ? styles.currentText : styles.otherText;
+          if (exercise.type === 'break' || exercise.type === 'typeBreak')
+            return (
+              <Text
+                style={[styles.breakText, currentStyle]}
+                key={`next${index}`}
+              >{`Break ${timerToString(exercise.value)}`}</Text>
+            );
+          return (
+            <View style={styles.itemContainer} key={`next${index}`}>
+              <Text style={currentStyle}>{exercise.name}</Text>
+              {exercise.type === 'reps' ? (
+                <Text style={[styles.subText, currentStyle]}>x{exercise.value}</Text>
+              ) : (
+                <Text style={[styles.subText, currentStyle]}>{timerToString(exercise.value)}</Text>
+              )}
+            </View>
+          );
+        })}
+      </Animated.ScrollView>
     </View>
   );
 };
@@ -184,11 +198,9 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
     width: metrics.width,
     position: 'absolute',
-    top: metrics.height - HEADER_HEIGHT + 5,
+    top: 0,
   },
-  background: {
-    // backgroundColor: 'rgba(0,0,0,0.5)',
-  },
+
   itemContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -196,7 +208,7 @@ const styles = StyleSheet.create({
     height: ITEM_HEIGHT,
   },
   listContainer: {
-    marginTop: 15,
+    marginTop: 5,
     paddingHorizontal: 10,
   },
   header: {
@@ -213,6 +225,7 @@ const styles = StyleSheet.create({
   },
   subText: {
     color: palette.text.gray,
+    alignSelf: 'center',
   },
   swipeBar: {
     backgroundColor: palette.text.primary,
@@ -226,8 +239,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     alignSelf: 'center',
   },
-  currentText: { color: palette.primary, fontFamily: typography.fonts.primary },
-  otherText: { fontFamily: typography.fonts.primary },
+  currentText: {
+    color: palette.primary,
+    fontFamily: typography.fonts.primary,
+    alignSelf: 'center',
+  },
+  otherText: { fontFamily: typography.fonts.primary, alignSelf: 'center' },
   stateEnded: {
     color: palette.primary,
   },
