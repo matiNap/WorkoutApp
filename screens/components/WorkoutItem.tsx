@@ -63,15 +63,15 @@ const WorkoutItem = ({
                 opacity: transitionValue,
               }}
             >
-              <FontAwesome
-                name="trash"
-                style={styles.icon}
+              <TouchableWithoutFeedback
                 onPress={() => {
                   if (length === 1) closeEdit();
 
                   props.deleteWorkout(id);
                 }}
-              />
+              >
+                <FontAwesome name="trash" style={styles.icon} />
+              </TouchableWithoutFeedback>
             </Animated.View>
           )}
           {type === 'intervals' && time !== -1 && !editOpened && (

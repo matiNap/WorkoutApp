@@ -2,11 +2,7 @@
   "expo": {
     "name": "Workout Timer - porfolio app",
     "slug": "workout_timer_porfolio_app",
-    "platforms": [
-      "ios",
-      "android",
-      "web"
-    ],
+    "platforms": ["ios", "android", "web"],
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -22,15 +18,15 @@
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
+    "android": {
+      "package": "napieralski.mateusz.workouttimer",
+      "versionCode": 1
+    },
     "ios": {
       "supportsTablet": false,
       "infoPlist": {
-        "UIBackgroundModes": [
-          "audio"
-        ]
+        "UIBackgroundModes": ["audio"]
       }
     },
     "description": "Workout timer applications as my portfolio.",

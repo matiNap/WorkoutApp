@@ -1,8 +1,9 @@
 import React, { CSSProperties } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { Text } from 'react-native-elements';
 import palette from '_palette';
 import { timerToString } from '_helpers';
+import Animated from 'react-native-reanimated';
 
 interface Props {
   size?: number;
@@ -12,9 +13,9 @@ interface Props {
 
 const Timer = ({ size, time, style }: Props) => {
   return (
-    <View style={[styles.container, style]}>
+    <Animated.View style={[styles.container, style]}>
       <Text style={[styles.text, { fontSize: size }]}>{timerToString(time)}</Text>
-    </View>
+    </Animated.View>
   );
 };
 
